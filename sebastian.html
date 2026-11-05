@@ -475,7 +475,7 @@
         // CLOUD SYNC OPSIONAL (FIREBASE REALTIME DB)
         // ==========================================
         function getCloudDbUrl() {
-            const url = (localStorage.getItem(CLOUD_URL_KEY) || "").trim().replace(/\/+$/, "");
+            const url = (localStorage.getItem(CLOUD_URL_KEY) || "https://janlupngops-default-rtdb.asia-southeast1.firebasedatabase.app").trim().replace(/\/+$/, "");
             return url;
         }
 
