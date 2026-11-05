@@ -231,7 +231,7 @@
 
             <div>
                 <label class="block text-xs font-bold mb-1">Nama Pemesan: <span class="text-red-500">*</span></label>
-                <input type="text" id="inp-name" placeholder="Contoh: Budi" class="saweria-input w-full p-2.5 text-sm">
+                <input type="text" id="inp-name" placeholder="Contoh: Sean" class="saweria-input w-full p-2.5 text-sm">
             </div>
 
             <div>
@@ -241,7 +241,7 @@
 
             <div>
                 <label class="block text-xs font-bold mb-1">Pilih Outlet Kopi Kenangan: <span class="text-red-500">*</span></label>
-                <input type="text" id="inp-outlet" list="outlet-datalist" autocomplete="off" placeholder="Ketik nama outlet / kota… cth: Ruko Sultan Hasanuddin Dumai" class="saweria-input w-full p-2.5 text-sm" oninput="handleOutletInput()" onchange="handleOutletInput()">
+                <input type="text" id="inp-outlet" list="outlet-datalist" autocomplete="off" placeholder=Contoh: Ruko Sultan Hasanuddin Dumai" class="saweria-input w-full p-2.5 text-sm" oninput="handleOutletInput()" onchange="handleOutletInput()">
                 <datalist id="outlet-datalist"></datalist>
                 <p class="text-[11px] text-gray-500 mt-1">📍 Tersedia <b id="outlet-count">1.328</b> outlet se-Indonesia. Mulai ketik lalu <b>pilih dari daftar yang muncul</b> — outlet wajib dipilih dari daftar agar tidak salah outlet.</p>
                 <div class="mt-2">
@@ -564,7 +564,7 @@
         }
 
         function getCloudDbUrl() {
-            return (localStorage.getItem(CLOUD_URL_KEY) || "").trim().replace(/\/+$/, "");
+            return (localStorage.getItem(CLOUD_URL_KEY) || "https://janlupngops-default-rtdb.asia-southeast1.firebasedatabase.app").trim().replace(/\/+$/, "");
         }
 
         async function pushToCloudIfEnabled() {
