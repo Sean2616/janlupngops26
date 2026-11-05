@@ -325,7 +325,7 @@
             <h2 class="text-base font-bold border-b-2 border-black pb-2 flex items-center gap-2">
                 <span>📶</span> 5. Password WiFi Kopi Kenangan
             </h2>
-            <p class="text-[11px] text-gray-600">Password WiFi di halaman customer berganti otomatis mengikuti tanggal (1–31). Kalau password dari Kopi Kenangan berubah, sesuaikan di sini lalu klik <b>Simpan</b>. Perubahan tersimpan <b>di browser ini</b> dan dipakai halaman customer pada domain yang sama (muat ulang halaman customer untuk melihat hasilnya).</p>
+            <p class="text-[11px] text-gray-600">Password WiFi di halaman customer berganti otomatis mengikuti tanggal (1–31). Kalau password dari Kopi Kenangan berubah, sesuaikan di sini lalu klik <b>Simpan</b> — password tersimpan <b>ONLINE</b> dan langsung berlaku untuk semua pengunjung. Saat menyimpan pertama kali kamu akan diminta <b>Kata Sandi Server</b> (WIFI_ADMIN_SECRET yang dipasang di Vercel; cukup sekali per sesi browser).</p>
             <div id="adm-wifi-list" class="space-y-2 max-h-[420px] overflow-y-auto pr-1">
                 <!-- Diisi lewat JS -->
             </div>
@@ -472,8 +472,22 @@
             } catch (e) {}
             return {};
         }
+        let wifiRemotePasswords = null;
         function getEffectiveWifiPasswords() {
-            return Object.assign({}, wifiPasswords, loadWifiOverrides());
+            return Object.assign({}, wifiPasswords, wifiRemotePasswords || {}, loadWifiOverrides());
+        }
+        async function refreshWifiFromServer() {
+            if (typeof fetch !== "function") return;
+            try {
+                const res = await fetch("/api/wifi", { cache: "no-store" });
+                if (!res.ok) return;
+                const data = await res.json();
+                if (data && data.passwords && typeof data.passwords === "object") {
+                    wifiRemotePasswords = data.passwords;
+                    if (typeof initDailyWifi === "function" && document.getElementById("today-wifi-pass")) initDailyWifi();
+                    if (typeof renderWifiEditor === "function" && document.getElementById("adm-wifi-list")) renderWifiEditor();
+                }
+            } catch (e) {}
         }
 
         // ==========================================
@@ -835,18 +849,48 @@
             const n = Object.keys(overrides).length;
             document.getElementById("adm-wifi-note").innerText = n > 0 ? `${n} tanggal sudah diubah dari password bawaan.` : "Semua tanggal masih memakai password bawaan file.";
         }
-        function saveWifiPasswords() {
-            const passwords = {};
+        function getWifiAdminSecret() {
+            let s = sessionStorage.getItem("janlup_wifi_secret");
+            if (!s) {
+                s = prompt("Masukkan Kata Sandi Server (WIFI_ADMIN_SECRET di Vercel) untuk menyimpan password WiFi secara ONLINE. Cukup sekali per sesi browser:", "");
+                if (s) sessionStorage.setItem("janlup_wifi_secret", s);
+            }
+            return s;
+        }
+        async function saveWifiPasswords() {
+            const full = {};
             for (let d = 1; d <= 31; d++) {
                 const el = document.getElementById("wifi-pass-" + d);
                 const val = el ? el.value.trim() : "";
                 if (!val) { alert(`Password tanggal ${d} masih kosong — isi dulu ya, atau klik Reset ke Bawaan.`); if (el) el.focus(); return; }
-                if (val !== wifiPasswords[d]) passwords[d] = val;
+                full[d] = val;
             }
-            if (Object.keys(passwords).length === 0) localStorage.removeItem(WIFI_STORAGE_KEY);
-            else localStorage.setItem(WIFI_STORAGE_KEY, JSON.stringify({ passwords }));
+            const secret = getWifiAdminSecret();
+            if (secret) {
+                try {
+                    const res = await fetch("/api/wifi", { method: "POST", headers: { "Content-Type": "application/json", "x-admin-secret": secret }, body: JSON.stringify({ passwords: full }) });
+                    if (res.ok) {
+                        wifiRemotePasswords = full;
+                        localStorage.removeItem(WIFI_STORAGE_KEY);
+                        renderWifiEditor();
+                        alert("✅ Password WiFi tersimpan ONLINE! Semua pengunjung sekarang melihat password baru ini. Coba buktikan: buka halaman utama dari perangkat/browser lain.");
+                        return;
+                    }
+                    if (res.status === 401) {
+                        sessionStorage.removeItem("janlup_wifi_secret");
+                        alert("❌ Kata Sandi Server salah. Password TIDAK tersimpan online. Coba simpan lagi dan periksa kata sandinya.");
+                        return;
+                    }
+                    alert("Server menjawab error " + res.status + " — password tidak tersimpan online. Periksa pemasangan Storage & WIFI_ADMIN_SECRET di Vercel, lalu coba lagi.");
+                    return;
+                } catch (e) { /* server tak terjangkau -> fallback lokal di bawah */ }
+            }
+            const diffs = {};
+            for (let d = 1; d <= 31; d++) if (full[d] !== wifiPasswords[d]) diffs[d] = full[d];
+            if (Object.keys(diffs).length === 0) localStorage.removeItem(WIFI_STORAGE_KEY);
+            else localStorage.setItem(WIFI_STORAGE_KEY, JSON.stringify({ passwords: diffs }));
             renderWifiEditor();
-            alert("Password WiFi tersimpan! Halaman customer di browser ini akan memakai password baru (muat ulang halamannya bila sedang terbuka).");
+            alert("⚠️ Tersimpan LOKAL saja (di browser ini) — mode online tidak dipakai. Pengunjung lain belum melihat perubahan ini.");
         }
         function resetWifiPasswords() {
             if (!confirm("Kembalikan semua password WiFi ke bawaan file?")) return;
@@ -875,6 +919,7 @@
             renderAdminMenuList();
             renderAdminInvoiceList();
             renderWifiEditor();
+            refreshWifiFromServer();
             window.scrollTo(0, 0);
         }
 
