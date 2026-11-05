@@ -320,6 +320,22 @@
             </div>
         </section>
 
+        <!-- BAGIAN 5: PASSWORD WIFI KOPI KENANGAN -->
+        <section class="saweria-card bg-white p-5 space-y-4">
+            <h2 class="text-base font-bold border-b-2 border-black pb-2 flex items-center gap-2">
+                <span>📶</span> 5. Password WiFi Kopi Kenangan
+            </h2>
+            <p class="text-[11px] text-gray-600">Password WiFi di halaman customer berganti otomatis mengikuti tanggal (1–31). Kalau password dari Kopi Kenangan berubah, sesuaikan di sini lalu klik <b>Simpan</b>. Perubahan tersimpan <b>di browser ini</b> dan dipakai halaman customer pada domain yang sama (muat ulang halaman customer untuk melihat hasilnya).</p>
+            <div id="adm-wifi-list" class="space-y-2 max-h-[420px] overflow-y-auto pr-1">
+                <!-- Diisi lewat JS -->
+            </div>
+            <div class="flex gap-2">
+                <button onclick="saveWifiPasswords()" class="saweria-btn bg-[#4ade80] px-4 py-2 text-xs font-bold flex-1">💾 Simpan Password WiFi</button>
+                <button onclick="resetWifiPasswords()" class="saweria-btn bg-white px-4 py-2 text-xs font-bold">↩️ Reset ke Bawaan</button>
+            </div>
+            <p id="adm-wifi-note" class="text-[10px] text-gray-500"></p>
+        </section>
+
     </div>
 
     <!-- MODAL CEK & TAMPIL INVOICE CUSTOMER -->
@@ -433,6 +449,31 @@
 
         function formatRp(num) {
             return "Rp " + Number(num).toLocaleString("id-ID");
+        }
+
+        // ==========================================
+        // PASSWORD WIFI KOPI KENANGAN OTOMATIS (01 - 31)
+        // ==========================================
+        const wifiPasswords = {
+            1: "TemanKenangan#01", 2: "SelaluSeru@02", 3: "WorkFromKenangan+03", 4: "SahabatSetia=4", 5: "PaduanPas!05",
+            6: "AndalanMantan#06", 7: "NyantaiNgopi@07", 8: "KenanganNyaman+08", 9: "SepenuhHati=09", 10: "AsliAsik!10",
+            11: "KopiKenanganMantan#11", 12: "CafeMaltLatte@12", 13: "SparksAmericano+13", 14: "KenanganFrappe=14", 15: "SusuGrassJelly!15",
+            16: "AdamAyam#16", 17: "FriendChip@17", 18: "CoklatKlasik+18", 19: "SaudiSpicy=19", 20: "ChiMateNikmat!20",
+            21: "ColorpopBubble#21", 22: "TwinsTumbler@22", 23: "CuteCapybara+23", 24: "BaliKintamani=24", 25: "JuwaraBeans!25",
+            26: "SelfRewardDulu#26", 27: "WorkLifeNgopi@27", 28: "SetegukEspresso+28", 29: "JajanKenangan=29", 30: "SehidupSehati!30",
+            31: "KopiFavorite#31"
+        };
+
+        const WIFI_STORAGE_KEY = "janlup_wifi_v1";
+        function loadWifiOverrides() {
+            try {
+                const saved = JSON.parse(localStorage.getItem(WIFI_STORAGE_KEY) || "null");
+                if (saved && saved.passwords && typeof saved.passwords === "object") return saved.passwords;
+            } catch (e) {}
+            return {};
+        }
+        function getEffectiveWifiPasswords() {
+            return Object.assign({}, wifiPasswords, loadWifiOverrides());
         }
 
         // ==========================================
@@ -772,6 +813,48 @@
             renderAdminInvoiceList();
         }
 
+        // ---------- Editor Password WiFi (Admin) ----------
+        function renderWifiEditor() {
+            const listEl = document.getElementById("adm-wifi-list");
+            if (!listEl) return;
+            const effective = getEffectiveWifiPasswords();
+            const overrides = loadWifiOverrides();
+            const todayDate = new Date().getDate();
+            let rows = "";
+            for (let d = 1; d <= 31; d++) {
+                const dayNum = d < 10 ? `0${d}` : d;
+                const changed = overrides[d] && overrides[d] !== wifiPasswords[d];
+                rows += `<div class="flex items-center gap-2 p-2 rounded-lg border-2 border-black ${d === todayDate ? "bg-[#faae2b]" : "bg-[#fff8e7]"}">
+                    <span class="px-2 py-0.5 bg-black text-white rounded text-[10px] font-bold shrink-0">Tgl ${dayNum}</span>
+                    <input id="wifi-pass-${d}" type="text" value="${escHtml(effective[d] || "")}" class="saweria-input flex-1 min-w-0 p-1.5 text-[11px] font-bold">
+                    ${changed ? '<span class="text-[9px] bg-green-300 border border-black px-1 rounded font-bold shrink-0">BARU</span>' : ""}
+                    ${d === todayDate ? '<span class="text-[9px] bg-white border border-black px-1 rounded font-bold shrink-0">HARI INI</span>' : ""}
+                </div>`;
+            }
+            listEl.innerHTML = rows;
+            const n = Object.keys(overrides).length;
+            document.getElementById("adm-wifi-note").innerText = n > 0 ? `${n} tanggal sudah diubah dari password bawaan.` : "Semua tanggal masih memakai password bawaan file.";
+        }
+        function saveWifiPasswords() {
+            const passwords = {};
+            for (let d = 1; d <= 31; d++) {
+                const el = document.getElementById("wifi-pass-" + d);
+                const val = el ? el.value.trim() : "";
+                if (!val) { alert(`Password tanggal ${d} masih kosong — isi dulu ya, atau klik Reset ke Bawaan.`); if (el) el.focus(); return; }
+                if (val !== wifiPasswords[d]) passwords[d] = val;
+            }
+            if (Object.keys(passwords).length === 0) localStorage.removeItem(WIFI_STORAGE_KEY);
+            else localStorage.setItem(WIFI_STORAGE_KEY, JSON.stringify({ passwords }));
+            renderWifiEditor();
+            alert("Password WiFi tersimpan! Halaman customer di browser ini akan memakai password baru (muat ulang halamannya bila sedang terbuka).");
+        }
+        function resetWifiPasswords() {
+            if (!confirm("Kembalikan semua password WiFi ke bawaan file?")) return;
+            localStorage.removeItem(WIFI_STORAGE_KEY);
+            renderWifiEditor();
+            alert("Password WiFi sudah dikembalikan ke bawaan.");
+        }
+
         // ==========================================
         // LOGIN PANEL ADMIN (halaman terpisah sebastian.html)
         // ==========================================
@@ -791,6 +874,7 @@
             loadAdminSettingsForm();
             renderAdminMenuList();
             renderAdminInvoiceList();
+            renderWifiEditor();
             window.scrollTo(0, 0);
         }
 
