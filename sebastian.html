@@ -441,7 +441,7 @@
         // perangkat yang dipakai memesan (localStorage).
         // ==========================================
         const INVOICE_KEY = "janlup_invoices_v1";
-        const INVOICE_STATUSES = ["Menunggu Pembayaran", "Lunas", "Selesai", "Dibatalkan"];
+        const INVOICE_STATUSES = ["Menunggu Pembayaran", "Lunas", "Diproses", "Siap Diambil", "Selesai", "Dibatalkan"];
         let currentInvoiceId = null;
 
         function loadInvoices() {
@@ -469,12 +469,14 @@
             return id;
         }
 
-        function createInvoice(name, outletData, note, totals) {
+        function createInvoice(name, outletData, note, totals, phone) {
             const list = loadInvoices();
             const inv = {
                 id: generateInvoiceId(list),
                 createdAt: new Date().toISOString(),
                 customer: name,
+                customerPhone: phone || "",
+                orderNo: "",
                 outlet: { code: outletData.code, name: outletData.name, city: outletData.city, address: outletData.address, open: outletData.open, close: outletData.close },
                 items: cart.map(item => ({ name: item.name, category: item.category, size: item.size, details: item.details, normalPrice: item.normalPrice })),
                 totals: { totalNormal: totals.totalNormal, discount: totals.actualDiscount, maxDisc: totals.maxDisc, subtotal: totals.subtotalAfterDiscount, feeLabel: totals.feeTierLabel, fee: totals.feePerTrans, grandTotal: totals.grandTotal },
@@ -489,10 +491,30 @@
         }
 
         function invoiceStatusBadge(status) {
-            const colors = { "Menunggu Pembayaran": "bg-yellow-300", "Lunas": "bg-green-300", "Selesai": "bg-sky-300", "Dibatalkan": "bg-red-300" };
+            const colors = { "Menunggu Pembayaran": "bg-yellow-300", "Lunas": "bg-green-300", "Diproses": "bg-blue-300", "Siap Diambil": "bg-purple-300", "Selesai": "bg-sky-300", "Dibatalkan": "bg-red-300" };
             return `<span class="${colors[status] || 'bg-gray-200'} border border-black px-1.5 py-0.5 rounded text-[10px] font-bold uppercase">${escHtml(status)}</span>`;
         }
 
+        const ORDER_STEPS = ["Menunggu Pembayaran", "Lunas", "Diproses", "Siap Diambil", "Selesai"];
+        const ORDER_STEP_LABELS = { "Menunggu Pembayaran": "Menunggu Bayar", "Lunas": "Lunas", "Diproses": "Diproses", "Siap Diambil": "Siap Diambil", "Selesai": "Selesai" };
+        function renderOrderProgress(inv) {
+            if (inv.status === "Dibatalkan") {
+                return `<div class="mt-2 bg-red-200 border-2 border-black rounded-lg p-2.5 text-center"><p class="font-bold text-xs">\u274C Pesanan Dibatalkan</p></div>`;
+            }
+            const cur = Math.max(0, ORDER_STEPS.indexOf(inv.status));
+            const steps = ORDER_STEPS.map((s, i) => {
+                const done = i < cur, active = i === cur;
+                const dotCls = done ? "bg-green-400" : (active ? "bg-[#faae2b]" : "bg-gray-200");
+                const lblCls = active ? "font-bold text-black" : "text-gray-500";
+                const line = i < ORDER_STEPS.length - 1 ? `<div class="flex-1 h-1 mx-0.5 mt-3 rounded ${i < cur ? "bg-green-400" : "bg-gray-300"}"></div>` : "";
+                return `<div class="flex flex-col items-center shrink-0 w-11"><div class="w-6 h-6 rounded-full border-2 border-black ${dotCls} flex items-center justify-center text-[10px] font-bold">${done ? "\u2713" : (i + 1)}</div><p class="text-[8px] leading-tight text-center mt-1 ${lblCls}">${ORDER_STEP_LABELS[s]}</p></div>${line}`;
+            }).join("");
+            return `<div class="mt-2 bg-[#fff8e7] border border-black rounded p-2"><p class="text-[10px] font-bold uppercase text-gray-500 mb-1.5">\u{1F4E6} Progress Pesanan</p><div class="flex items-start">${steps}</div><p class="text-[10px] mt-1">Status saat ini: <b>${escHtml(inv.status)}</b></p></div>`;
+        }
+        function renderOrderNoBlock(inv) {
+            if (!inv.orderNo) return "";
+            return `<div class="mt-2 bg-green-200 border-2 border-black rounded-lg p-2.5 text-center"><p class="text-[10px] font-bold uppercase">\u{1F3AB} Nomor Order Kopi Kenangan</p><p class="font-bold text-xl tracking-wider" style="font-family:'IBM Plex Mono',monospace">${escHtml(inv.orderNo)}</p><p class="text-[10px]">Tunjukkan nomor ini ke kasir saat mengambil pesananmu.</p></div>`;
+        }
         function renderInvoiceHTML(inv, banner) {
             const t = inv.totals;
             const tgl = new Date(inv.createdAt).toLocaleString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" });
@@ -514,11 +536,14 @@
                 <p class="text-[11px]">No. Invoice: <b class="text-sm">${escHtml(inv.id)}</b></p>
                 <p class="text-[11px]">Tanggal: ${tgl} WIB</p>
                 <p class="text-[11px]">Pemesan: <b>${escHtml(inv.customer)}</b></p>
+                ${inv.customerPhone ? `<p class="text-[11px]">WhatsApp: <b>${escHtml(inv.customerPhone)}</b></p>` : ""}
                 <div class="mt-2 bg-[#fff8e7] border border-black rounded p-2">
                     <p class="font-bold">📍 ${escHtml(inv.outlet.name)} (${escHtml(inv.outlet.code)})</p>
                     <p class="text-[11px]">${escHtml(inv.outlet.address)}</p>
                     <p class="text-[11px]">🕐 ${escHtml(inv.outlet.open)} – ${escHtml(inv.outlet.close)} WIB • ${escHtml(inv.method)}</p>
                 </div>
+                ${renderOrderProgress(inv)}
+                ${renderOrderNoBlock(inv)}
                 <div class="mt-2">${itemsHtml}</div>
                 <div class="mt-2 space-y-0.5 text-[11px]">
                     <div class="flex justify-between"><span>Total Harga Normal:</span><span>${formatRp(t.totalNormal)}</span></div>
@@ -619,7 +644,13 @@
                     <div class="flex-1 min-w-0">
                         <p class="font-bold text-xs">${escHtml(inv.id)} ${invoiceStatusBadge(inv.status)}</p>
                         <p class="text-[11px] mt-0.5">👤 ${escHtml(inv.customer)} • 📍 ${escHtml(inv.outlet.name)} • 🕐 ${tgl} WIB</p>
-                        <p class="text-[11px]">${inv.items.length} item • 💳 QRIS • <b>${formatRp(inv.totals.grandTotal)}</b></p>
+                        <p class="text-[11px]">${inv.items.length} item \u2022 \u{1F4B3} QRIS \u2022 <b>${formatRp(inv.totals.grandTotal)}</b></p>
+                        <p class="text-[11px] mt-1">\u{1F3AB} No. Order KK: <b>${inv.orderNo ? escHtml(inv.orderNo) : "\u2014"}</b>${inv.customerPhone ? ` \u2022 \u{1F4F1} ${escHtml(inv.customerPhone)}` : ""}</p>
+                        <div class="flex items-center gap-1.5 mt-1">
+                            <input id="ordno-${inv.id}" type="text" value="${escHtml(inv.orderNo || "")}" placeholder="Isi nomor order dari aplikasi Kopi Kenangan" class="saweria-input p-1.5 text-[10px] flex-1 min-w-0">
+                            <button onclick="saveOrderNo('${inv.id}')" title="Simpan nomor order" class="saweria-btn bg-white px-2 py-1.5 text-[10px] font-bold shrink-0">\u{1F4BE} Simpan</button>
+                            <button onclick="sendOrderInfoWA('${inv.id}')" title="Kirim status + nomor order ke WhatsApp customer" class="saweria-btn bg-[#4ade80] px-2 py-1.5 text-[10px] font-bold shrink-0">\u{1F4F2} Kirim</button>
+                        </div>
                     </div>
                     <div class="flex items-center gap-1.5 shrink-0">
                         <select onchange="updateInvoiceStatus('${inv.id}', this.value)" class="saweria-input p-1.5 text-[10px] font-bold">${statusOptions}</select>
@@ -638,6 +669,35 @@
             saveInvoices(list);
             renderAdminInvoiceList();
         }
+        function saveOrderNo(id) {
+            const input = document.getElementById("ordno-" + id);
+            const list = loadInvoices();
+            const inv = list.find(i => i.id === id);
+            if (!inv || !input) return;
+            inv.orderNo = input.value.trim();
+            saveInvoices(list);
+            renderAdminInvoiceList();
+            alert(inv.orderNo ? ("Nomor order " + inv.orderNo + " tersimpan untuk invoice " + id + ". Customer bisa melihatnya di Cek Invoice / Riwayat Pemesanan (browser yang sama), atau kirim juga lewat tombol \u{1F4F2} Kirim.") : ("Nomor order dikosongkan untuk invoice " + id + "."));
+        }
+        function normalizeWaNumber(raw) {
+            let d = String(raw || "").replace(/[^0-9]/g, "");
+            if (d.startsWith("0")) d = "62" + d.slice(1);
+            return d;
+        }
+        function sendOrderInfoWA(id) {
+            const inv = findInvoiceById(id);
+            if (!inv) return;
+            const latestNo = (document.getElementById("ordno-" + id)?.value || inv.orderNo || "").trim();
+            let msg = `Halo kak ${inv.customer}, update pesananmu di *janlupngops.fun*:\n\n`;
+            msg += `\u{1F9FE} Invoice: *${inv.id}*\n`;
+            msg += `\u{1F4CD} Outlet: ${inv.outlet.name}\n`;
+            msg += `\u{1F4CC} Status: *${inv.status}*\n`;
+            if (latestNo) msg += `\u{1F3AB} Nomor Order Kopi Kenangan: *${latestNo}*\nTunjukkan nomor ini ke kasir saat mengambil pesananmu ya.\n`;
+            msg += `\nTerima kasih sudah order! \u{1F64F}`;
+            const num = normalizeWaNumber(inv.customerPhone);
+            const url = num ? `https://wa.me/${num}?text=${encodeURIComponent(msg)}` : `https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
+            window.open(url, "_blank");
+        }
 
         function deleteInvoice(id) {
             if (!confirm("Hapus invoice " + id + " dari panel ini?")) return;
@@ -646,7 +706,7 @@
         }
 
         // ==========================================
-        // LOGIN PANEL ADMIN (halaman terpisah sebastian.html)
+        // LOGIN PANEL ADMIN (halaman terpisah admin.html)
         // ==========================================
         function verifyAdminPin() {
             const inputPin = document.getElementById("inp-admin-pin").value;
