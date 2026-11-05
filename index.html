@@ -1158,10 +1158,37 @@
             31: "KopiFavorite#31"
         };
 
+        const WIFI_STORAGE_KEY = "janlup_wifi_v1";
+        function loadWifiOverrides() {
+            try {
+                const saved = JSON.parse(localStorage.getItem(WIFI_STORAGE_KEY) || "null");
+                if (saved && saved.passwords && typeof saved.passwords === "object") return saved.passwords;
+            } catch (e) {}
+            return {};
+        }
+        let wifiRemotePasswords = null;
+        function getEffectiveWifiPasswords() {
+            return Object.assign({}, wifiPasswords, wifiRemotePasswords || {}, loadWifiOverrides());
+        }
+        async function refreshWifiFromServer() {
+            if (typeof fetch !== "function") return;
+            try {
+                const res = await fetch("/api/wifi", { cache: "no-store" });
+                if (!res.ok) return;
+                const data = await res.json();
+                if (data && data.passwords && typeof data.passwords === "object") {
+                    wifiRemotePasswords = data.passwords;
+                    if (typeof initDailyWifi === "function" && document.getElementById("today-wifi-pass")) initDailyWifi();
+                    if (typeof renderWifiEditor === "function" && document.getElementById("adm-wifi-list")) renderWifiEditor();
+                }
+            } catch (e) {}
+        }
+
         function initDailyWifi() {
             const now = new Date();
             const todayDate = now.getDate();
-            const todayPass = wifiPasswords[todayDate] || "TemanKenangan#01";
+            const effectiveWifi = getEffectiveWifiPasswords();
+            const todayPass = effectiveWifi[todayDate] || "TemanKenangan#01";
             const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
             document.getElementById("wifi-date-label").innerText = `Update Otomatis: ${now.toLocaleDateString('id-ID', options)}`;
             document.getElementById("today-wifi-pass").innerText = todayPass;
@@ -1171,7 +1198,7 @@
             for (let d = 1; d <= 31; d++) {
                 const isToday = (d === todayDate);
                 const dayNum = d < 10 ? `0${d}` : d;
-                const pass = wifiPasswords[d];
+                const pass = effectiveWifi[d];
                 html += `
                 <div class="flex justify-between items-center p-2.5 rounded-lg border-2 border-black ${isToday ? 'bg-[#faae2b] font-bold' : 'bg-white'}">
                     <div class="flex items-center gap-2">
@@ -1625,6 +1652,7 @@
         initOutletPicker();
         initCategoryDragScroll();
         initDailyWifi();
+        refreshWifiFromServer();
         applyStoreStatusUI();
         renderMenus();
     </script>
