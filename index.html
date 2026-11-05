@@ -324,7 +324,7 @@
                     📜 Riwayat Pemesanan
                 </button>
                 <button onclick="openTrackModal()" class="saweria-btn bg-sky-300 px-3 py-1.5 text-[11px] font-bold inline-flex items-center gap-1.5">
-                    \u{1F4E6} Lacak Pesanan
+                    📦 Lacak Pesanan
                 </button>
                 <button onclick="openInvoiceChecker()" class="saweria-btn bg-white px-3 py-1.5 text-[11px] font-bold inline-flex items-center gap-1.5">
                     🧾 Cek Invoice
@@ -378,9 +378,9 @@
             <div class="flex justify-between items-start border-b-2 border-black pb-3 mb-3 shrink-0">
                 <div>
                     <span class="text-[10px] font-bold bg-[#d8f3dc] border border-black px-1.5 py-0.5 rounded">PANTAU PESANANMU</span>
-                    <h3 class="font-bold text-base mt-1">\u{1F4E6} Lacak Pesanan \u2014 JanLupNgops.fun</h3>
+                    <h3 class="font-bold text-base mt-1">📦 Lacak Pesanan — JanLupNgops.fun</h3>
                 </div>
-                <button onclick="closeTrackModal()" class="saweria-btn bg-red-400 w-8 h-8 flex items-center justify-center font-bold shrink-0">\u2715</button>
+                <button onclick="closeTrackModal()" class="saweria-btn bg-red-400 w-8 h-8 flex items-center justify-center font-bold shrink-0">✕</button>
             </div>
             <div class="overflow-y-auto pr-1">
                 <p class="text-[11px] text-gray-700 mb-2">Masukkan nomor invoice dari struk / pesan WhatsApp kamu untuk melihat progress pesananmu saat ini.</p>
@@ -821,7 +821,7 @@
         const ORDER_STEP_LABELS = { "Menunggu Pembayaran": "Menunggu Bayar", "Lunas": "Lunas", "Diproses": "Diproses", "Siap Diambil": "Siap Diambil", "Selesai": "Selesai" };
         function renderOrderProgress(inv) {
             if (inv.status === "Dibatalkan") {
-                return `<div class="mt-2 bg-red-200 border-2 border-black rounded-lg p-2.5 text-center"><p class="font-bold text-xs">\u274C Pesanan Dibatalkan</p></div>`;
+                return `<div class="mt-2 bg-red-200 border-2 border-black rounded-lg p-2.5 text-center"><p class="font-bold text-xs">❌ Pesanan Dibatalkan</p></div>`;
             }
             const cur = Math.max(0, ORDER_STEPS.indexOf(inv.status));
             const steps = ORDER_STEPS.map((s, i) => {
@@ -829,13 +829,13 @@
                 const dotCls = done ? "bg-green-400" : (active ? "bg-[#faae2b]" : "bg-gray-200");
                 const lblCls = active ? "font-bold text-black" : "text-gray-500";
                 const line = i < ORDER_STEPS.length - 1 ? `<div class="flex-1 h-1 mx-0.5 mt-3 rounded ${i < cur ? "bg-green-400" : "bg-gray-300"}"></div>` : "";
-                return `<div class="flex flex-col items-center shrink-0 w-11"><div class="w-6 h-6 rounded-full border-2 border-black ${dotCls} flex items-center justify-center text-[10px] font-bold">${done ? "\u2713" : (i + 1)}</div><p class="text-[8px] leading-tight text-center mt-1 ${lblCls}">${ORDER_STEP_LABELS[s]}</p></div>${line}`;
+                return `<div class="flex flex-col items-center shrink-0 w-11"><div class="w-6 h-6 rounded-full border-2 border-black ${dotCls} flex items-center justify-center text-[10px] font-bold">${done ? "✓" : (i + 1)}</div><p class="text-[8px] leading-tight text-center mt-1 ${lblCls}">${ORDER_STEP_LABELS[s]}</p></div>${line}`;
             }).join("");
-            return `<div class="mt-2 bg-[#fff8e7] border border-black rounded p-2"><p class="text-[10px] font-bold uppercase text-gray-500 mb-1.5">\u{1F4E6} Progress Pesanan</p><div class="flex items-start">${steps}</div><p class="text-[10px] mt-1">Status saat ini: <b>${escHtml(inv.status)}</b></p></div>`;
+            return `<div class="mt-2 bg-[#fff8e7] border border-black rounded p-2"><p class="text-[10px] font-bold uppercase text-gray-500 mb-1.5">📦 Progress Pesanan</p><div class="flex items-start">${steps}</div><p class="text-[10px] mt-1">Status saat ini: <b>${escHtml(inv.status)}</b></p></div>`;
         }
         function renderOrderNoBlock(inv) {
             if (!inv.orderNo) return "";
-            return `<div class="mt-2 bg-green-200 border-2 border-black rounded-lg p-2.5 text-center"><p class="text-[10px] font-bold uppercase">\u{1F3AB} Nomor Order Kopi Kenangan</p><p class="font-bold text-xl tracking-wider" style="font-family:'IBM Plex Mono',monospace">${escHtml(inv.orderNo)}</p><p class="text-[10px]">Tunjukkan nomor ini ke kasir saat mengambil pesananmu.</p></div>`;
+            return `<div class="mt-2 bg-green-200 border-2 border-black rounded-lg p-2.5 text-center"><p class="text-[10px] font-bold uppercase">🎫 Nomor Order Kopi Kenangan</p><p class="font-bold text-xl tracking-wider" style="font-family:'IBM Plex Mono',monospace">${escHtml(inv.orderNo)}</p><p class="text-[10px]">Tunjukkan nomor ini ke kasir saat mengambil pesananmu.</p></div>`;
         }
         function renderInvoiceHTML(inv, banner) {
             const t = inv.totals;
@@ -966,7 +966,7 @@
             const all = loadInvoices();
             if (all.length === 0) { el.innerHTML = ""; return; }
             el.innerHTML = `<p class="text-[10px] font-bold text-gray-500 uppercase mb-1">Pesananmu di perangkat ini:</p><div class="flex flex-wrap gap-1.5">` +
-                all.slice(0, 6).map(inv => `<button onclick="trackById('${inv.id}')" class="saweria-btn bg-white px-2 py-1 text-[10px] font-bold">${escHtml(inv.id)} \u2022 ${escHtml(inv.status)}</button>`).join("") + `</div>`;
+                all.slice(0, 6).map(inv => `<button onclick="trackById('${inv.id}')" class="saweria-btn bg-white px-2 py-1 text-[10px] font-bold">${escHtml(inv.id)} • ${escHtml(inv.status)}</button>`).join("") + `</div>`;
         }
         function trackById(id) {
             document.getElementById("inp-track-id").value = id;
@@ -981,7 +981,7 @@
             }
             const inv = findInvoiceById(q);
             if (!inv) {
-                box.innerHTML = `<div class="bg-red-200 border-2 border-black rounded-lg p-3 text-center"><p class="font-bold text-sm">\u274C Invoice tidak ditemukan</p><p class="text-[11px] mt-1">Invoice <b>${escHtml(q.toUpperCase())}</b> tidak ada di perangkat ini. Pastikan kamu memakai browser yang sama seperti saat memesan, dan nomor invoice-nya sudah benar.</p></div>`;
+                box.innerHTML = `<div class="bg-red-200 border-2 border-black rounded-lg p-3 text-center"><p class="font-bold text-sm">❌ Invoice tidak ditemukan</p><p class="text-[11px] mt-1">Invoice <b>${escHtml(q.toUpperCase())}</b> tidak ada di perangkat ini. Pastikan kamu memakai browser yang sama seperti saat memesan, dan nomor invoice-nya sudah benar.</p></div>`;
                 return;
             }
             const tgl = new Date(inv.createdAt).toLocaleString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" });
@@ -1000,11 +1000,11 @@
                 </div>
                 ${renderOrderNoBlock(inv)}
                 <div class="mt-2 bg-[#fff8e7] border border-black rounded p-2">
-                    <p class="font-bold text-[11px]">\u{1F4CD} ${escHtml(inv.outlet.name)}</p>
+                    <p class="font-bold text-[11px]">📍 ${escHtml(inv.outlet.name)}</p>
                     <p class="text-[11px]">${escHtml(inv.outlet.address)}</p>
-                    <p class="text-[11px]">\u{1F9FE} ${inv.items.length} item \u2022 Total <b>${formatRp(inv.totals.grandTotal)}</b> \u2022 \u{1F4B3} QRIS</p>
+                    <p class="text-[11px]">🧾 ${inv.items.length} item • Total <b>${formatRp(inv.totals.grandTotal)}</b> • 💳 QRIS</p>
                 </div>
-                <button onclick="closeTrackModal(); showInvoice(findInvoiceById('${inv.id}'), '')" class="saweria-btn bg-[#faae2b] w-full py-2 mt-3 text-[11px] font-bold">\u{1F9FE} Lihat Struk Lengkap</button>
+                <button onclick="closeTrackModal(); showInvoice(findInvoiceById('${inv.id}'), '')" class="saweria-btn bg-[#faae2b] w-full py-2 mt-3 text-[11px] font-bold">🧾 Lihat Struk Lengkap</button>
             </div>`;
         }
 
@@ -1060,13 +1060,13 @@
                         </div>
                         ${invoiceStatusBadge(inv.status)}
                     </div>
-                    <p class="mt-1.5">\u{1F4CD} <b>${escHtml(inv.outlet.name)}</b></p>
-                    ${inv.orderNo ? `<p class="text-[11px]">\u{1F3AB} No. Order Kopi Kenangan: <b>${escHtml(inv.orderNo)}</b></p>` : ""}
+                    <p class="mt-1.5">📍 <b>${escHtml(inv.outlet.name)}</b></p>
+                    ${inv.orderNo ? `<p class="text-[11px]">🎫 No. Order Kopi Kenangan: <b>${escHtml(inv.orderNo)}</b></p>` : ""}
                     <p class="text-[11px] text-gray-700 truncate">🧾 ${escHtml(itemNames)}</p>
                     <div class="flex justify-between items-center mt-2 gap-2">
                         <span class="font-bold">${inv.items.length} item • ${formatRp(inv.totals.grandTotal)}</span>
                         <span class="flex gap-1.5 shrink-0">
-                            <button onclick="openTrackModal('${inv.id}')" class="saweria-btn bg-sky-300 px-2.5 py-1.5 text-[10px] font-bold">\u{1F4E6} Lacak</button>
+                            <button onclick="openTrackModal('${inv.id}')" class="saweria-btn bg-sky-300 px-2.5 py-1.5 text-[10px] font-bold">📦 Lacak</button>
                             <button onclick="viewHistoryInvoice('${inv.id}')" class="saweria-btn bg-[#faae2b] px-2.5 py-1.5 text-[10px] font-bold">Detail</button>
                             ${inv.status !== "Dibatalkan" ? `<button onclick="reorderInvoice('${inv.id}')" class="saweria-btn bg-[#4ade80] px-2.5 py-1.5 text-[10px] font-bold">🔁 Pesan Lagi</button>` : ""}
                         </span>
