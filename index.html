@@ -2605,8 +2605,8 @@
       msg += `📍 Outlet: ${inv.outlet.name}\n`;
       msg += `📌 Status: *${inv.status}*\n`;
       if (latestNo) msg += `🎫 Nomor Order Kopi Kenangan: *${latestNo}*\n`;
-      msg += `\n• Nama Pemesan: *${inv.customer}*\n`;
-      msg += `Sebutkan nomor dan nama pemesan ini ke kasir saat mengambil pesananmu ya.\n`;
+      msg += `• Nama Pemesan: *${inv.customer}*\n`;
+      msg += `\nSebutkan nomor dan nama pemesan ini ke kasir saat mengambil pesananmu ya.\n`;
       msg += `\n📦 Lacak & lihat struk pesananmu di:\n${syncLink}\n`;
       msg += `\nTerima kasih sudah order! 🙏`;
       const num = normalizeWaNumber(inv.customerPhone);
