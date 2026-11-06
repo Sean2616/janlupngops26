@@ -1270,6 +1270,46 @@
     // ==========================================
     // 5. SISTEM INVOICE & TRACKING PESANAN
     // ==========================================
+
+    // ==========================================
+    // PRIVASI INVOICE PER DEVICE PELANGGAN
+    // ==========================================
+    const DEVICE_ID_KEY = "janlup_device_id";
+    const MY_INVOICES_KEY = "janlup_my_invoices_v1";
+
+    function getDeviceId() {
+      let id = localStorage.getItem(DEVICE_ID_KEY);
+      if (!id) {
+        id = "DEV-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8).toUpperCase();
+        localStorage.setItem(DEVICE_ID_KEY, id);
+      }
+      return id;
+    }
+
+    function getMyInvoiceIds() {
+      try { return JSON.parse(localStorage.getItem(MY_INVOICES_KEY)) || []; }
+      catch (e) { return []; }
+    }
+
+    function markAsMyInvoice(invoiceId) {
+      const list = getMyInvoiceIds();
+      if (!list.includes(invoiceId)) {
+        list.unshift(invoiceId);
+        localStorage.setItem(MY_INVOICES_KEY, JSON.stringify(list));
+      }
+    }
+
+    function isMyInvoice(inv) {
+      if (!inv) return false;
+      const myIds = getMyInvoiceIds();
+      return inv.deviceId === getDeviceId() || myIds.includes(inv.id);
+    }
+
+    // Hanya mengambil invoice milik HP/browser pelanggan ini saja
+    function loadCustomerOwnInvoices() {
+      return loadInvoices().filter(inv => isMyInvoice(inv));
+    }
+
     const INVOICE_STATUSES = ["Menunggu Pembayaran", "Lunas", "Diproses", "Siap Diambil", "Selesai", "Dibatalkan"];
     let currentInvoiceId = null;
 
@@ -1302,6 +1342,7 @@
       const list = loadInvoices();
       const inv = {
         id: generateInvoiceId(list),
+        deviceId: getDeviceId(), // Penanda khusus HP pelanggan pembuat order
         createdAt: new Date().toISOString(),
         customer: name,
         customerPhone: phone || "",
@@ -1316,6 +1357,7 @@
       };
       list.unshift(inv);
       saveInvoices(list);
+      markAsMyInvoice(inv.id); // Simpan ID invoice ini sebagai milik perangkat ini
       return inv;
     }
 
@@ -1478,7 +1520,7 @@
 
     function renderTrackRecent() {
       const el = document.getElementById("track-recent");
-      const all = loadInvoices();
+      const all = loadCustomerOwnInvoices(); // <-- Hanya tampilkan milik device ini
       if (all.length === 0) { el.innerHTML = ""; return; }
       el.innerHTML = `<p class="text-[10px] font-bold text-gray-500 uppercase mb-1">Pesananmu di perangkat ini:</p><div class="flex flex-wrap gap-1.5">` +
         all.slice(0, 6).map(inv => `<button type="button" onclick="trackById('${inv.id}')" class="saweria-btn bg-white px-2 py-1 text-[10px] font-bold">${escHtml(inv.id)} • ${escHtml(inv.status)}</button>`).join("") + `</div>`;
@@ -1551,7 +1593,7 @@
     function renderOrderHistory() {
       const summaryEl = document.getElementById("history-summary");
       const listEl = document.getElementById("history-list");
-      const all = loadInvoices();
+      const all = loadCustomerOwnInvoices(); // <-- Hanya tampilkan riwayat milik device ini
       if (all.length === 0) {
         summaryEl.innerHTML = "";
         listEl.innerHTML = `<div class="bg-white border-2 border-dashed border-black rounded-lg p-4 text-center"><p class="text-3xl mb-1">🛒</p><p class="font-bold">Belum ada riwayat pemesanan</p></div>`;
