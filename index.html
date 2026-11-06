@@ -2795,13 +2795,108 @@
 
   /* ---------- modal: produk live HABIS tidak bisa dibuka ----------
      Pilihan di modal sepenuhnya standar (Regular/Large, gula, es /
-     penyajian + catatan) — kotak Pilihan LIVE dihilangkan atas
-     permintaan pemilik situs. */
+     penyajian + catatan) — kotak Pilihan LIVE tetap dihilangkan.
+     SATU pengecualian atas permintaan pemilik situs: harga Large
+     diambil ASLI dari server (varian produk), bukan rumus +Rp6.000,
+     supaya sama dengan harga di aplikasi. Jumbo & add-on tetap tidak
+     ditambahkan. */
+  var priceCache = {};   /* "code|liveId" -> harga Large asli (0 = tidak ada) */
+  var pricePending = {}; /* "code|liveId" -> Promise */
+
+  function largePriceFromOptions(po) {
+    if (!po || !po.dimensions || !po.variants || !po.defaultSelectionPath) return null;
+    var sd = null;
+    for (var i = 0; i < po.dimensions.length; i++) if (/size/i.test(po.dimensions[i].title)) { sd = po.dimensions[i]; break; }
+    if (!sd) return null;
+    var lv = null;
+    for (var j = 0; j < sd.values.length; j++) if (sd.values[j].label === "Large") { lv = sd.values[j]; break; }
+    if (!lv) return null;
+    var segs = String(po.defaultSelectionPath).split(":").filter(Boolean).map(function (s) {
+      return s.indexOf(sd.code + "-") === 0 ? sd.code + "-" + lv.id : s;
+    });
+    var v = po.variants[segs.join(":") + ":"];
+    return v && v.price ? v.price : null;
+  }
+
+  /* CATATAN: situs ini kadang memuat ulang `menus` dari localStorage
+     (objek item jadi salinan baru), jadi harga TIDAK disimpan di objek
+     item — sumber kebenaran adalah priceCache (per kode outlet+produk),
+     dan harga diterapkan ulang ke activeMenu + label modal setiap kali
+     modal dibuka / harga tiba / tombol Tambah ditekan. */
+  function cachedLarge(it) {
+    if (!it || !it.liveId || !ml.code) return null;
+    var v = priceCache[ml.code + "|" + it.liveId];
+    return v > 0 ? v : null;
+  }
+
+  function applyLargeToModal(lp) {
+    try {
+      if (typeof activeMenu !== "undefined" && activeMenu) activeMenu.largePrice = lp;
+      var ll = document.getElementById("modal-large-label");
+      if (ll) ll.innerText = formatRp(Math.round(lp / 2)) + " (Normal " + formatRp(lp) + ")";
+      if (typeof updateModalPrice === "function") updateModalPrice();
+    } catch (e) {}
+  }
+
+  function refreshModalIfOpen(it) {
+    try {
+      var modal = document.getElementById("custom-modal");
+      if (!modal || modal.classList.contains("hidden")) return;
+      if (typeof activeMenu === "undefined" || !activeMenu || activeMenu.id !== it.id) return;
+      var lp = cachedLarge(it);
+      if (lp) applyLargeToModal(lp);
+    } catch (e) {}
+  }
+
+  function ensureLargePrice(it) {
+    var key = ml.code + "|" + it.liveId;
+    if (key in priceCache) return Promise.resolve(priceCache[key]);
+    if (pricePending[key]) return pricePending[key];
+    var p = postKK({ type: "options", store_code: ml.code, product_id: it.liveId }).then(function (j) {
+      var lp = null;
+      try { lp = largePriceFromOptions(j.productOptions); } catch (e) {}
+      priceCache[key] = lp || 0;
+      if (lp) refreshModalIfOpen(it);
+      return priceCache[key];
+    }).catch(function () { priceCache[key] = 0; return 0; });
+    pricePending[key] = p;
+    return p;
+  }
+
   var origOpen = openModal;
   openModal = function (id) {
     var it = ml.byId[id];
     if (it && it.soldOut) { alert("Maaf, menu ini sedang HABIS di outlet terpilih."); return; }
     origOpen.apply(this, arguments);
+    if (it && it.liveId && ml.code) {
+      var lp = cachedLarge(it);
+      if (lp) applyLargeToModal(lp);
+      else { try { ensureLargePrice(it); } catch (e) {} }
+    }
+  };
+
+  /* Klik "Tambah" yang sangat cepat (harga asli belum tiba) menunggu
+     sebentar — maks 3 detik — supaya harga Large di keranjang benar. */
+  var origAdd = addToCart;
+  addToCart = function () {
+    var it = null;
+    try { if (typeof activeMenu !== "undefined" && activeMenu) it = ml.byId[activeMenu.id]; } catch (e) {}
+    var proceed = function () {
+      var lp = cachedLarge(it);
+      if (lp) { try { activeMenu.largePrice = lp; } catch (e) {} }
+      origAdd();
+    };
+    if (it && it.liveId && ml.code) {
+      var key = ml.code + "|" + it.liveId;
+      if (!(key in priceCache) && pricePending[key]) {
+        var done = false;
+        var finish = function () { if (!done) { done = true; proceed(); } };
+        pricePending[key].then(finish);
+        setTimeout(finish, 3000);
+        return;
+      }
+    }
+    proceed();
   };
 })();
 </script>
