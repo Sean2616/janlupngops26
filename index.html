@@ -2716,9 +2716,11 @@
     var nm = (selectedOutlet && selectedOutlet.name) ? selectedOutlet.name : code;
     var openTxt = status ? (status.isOpen ? " 🟢 Outlet BUKA." : " 🔴 Outlet sedang TUTUP.") : "";
     setStatus("⚡ <b>Menu LIVE</b> dari <b>" + esc(nm) + "</b> — " + ml.liveItems.length + " produk." + openTxt + " Harga mengikuti harga resmi outlet; diskon 50% &amp; checkout tetap seperti biasa.", true);
+    startBgLargePrices(code, ml.liveItems);
   }
 
   function applyAdmin(reasonHtml) {
+    bgSeq++;
     menus = ml.adminMenus;
     currentCategory = "All";
     ml.mode = "admin"; ml.code = null; ml.liveItems = []; ml.byId = {};
@@ -2737,7 +2739,11 @@
     var statusP = (selectedOutlet && selectedOutlet.lat != null)
       ? postKK({ type: "status", store_code: code, latitude: selectedOutlet.lat, longitude: selectedOutlet.lng }).catch(function () { return null; })
       : Promise.resolve(null);
-    Promise.all([postKK({ type: "menu", store_code: code }), statusP]).then(function (res) {
+    var menuP = postKK({ type: "menu", store_code: code }).catch(function () {
+      /* satu kali coba lagi setelah jeda — server upstream kadang sibuk sesaat */
+      return new Promise(function (r) { setTimeout(r, 2500); }).then(function () { return postKK({ type: "menu", store_code: code }); });
+    });
+    Promise.all([menuP, statusP]).then(function (res) {
       if (seq !== ml.seq) return;
       ml.loading = false; ml.loadingCode = null;
       var data = res[0];
@@ -2781,6 +2787,8 @@
       var m = /openModal\((\d+)\)/.exec(b.getAttribute("onclick") || "");
       if (!m) return;
       var it = ml.byId[+m[1]]; if (!it) return;
+      var lpB = cachedLarge(it);
+      if (lpB) setCardLarge(b, lpB);
       b.style.position = "relative";
       if (it.soldOut) {
         b.style.opacity = "0.55";
@@ -2800,6 +2808,31 @@
      ditambahkan. */
   var priceCache = {};   /* "code|liveId" -> harga Large asli (0 = tidak ada) */
   var pricePending = {}; /* "code|liveId" -> Promise */
+  /* Harga Large disimpan di localStorage (TTL 12 jam) supaya kunjungan
+     berikutnya tidak perlu mengambil ulang dari server. */
+  var PRICE_LS_KEY = "janlup_large_prices_v1";
+  var priceSaveTimer = null;
+  try {
+    var savedPrices = JSON.parse(localStorage.getItem(PRICE_LS_KEY) || "null");
+    if (savedPrices && savedPrices.p && savedPrices.t) {
+      var nowMs = Date.now();
+      Object.keys(savedPrices.p).forEach(function (k) {
+        if (nowMs - (savedPrices.t[k] || 0) < 12 * 3600 * 1000) priceCache[k] = savedPrices.p[k];
+      });
+    }
+  } catch (e) {}
+  function persistPrices(key) {
+    try {
+      var all = JSON.parse(localStorage.getItem(PRICE_LS_KEY) || '{"p":{},"t":{}}');
+      all.p[key] = priceCache[key]; all.t[key] = Date.now();
+      localStorage.setItem(PRICE_LS_KEY, JSON.stringify(all));
+    } catch (e) {}
+  }
+  function queuePersistPrices(key) {
+    if (priceSaveTimer) return;
+    priceSaveTimer = setTimeout(function () { priceSaveTimer = null; }, 800);
+    persistPrices(key);
+  }
 
   function largePriceFromOptions(po) {
     if (!po || !po.dimensions || !po.variants || !po.defaultSelectionPath) return null;
@@ -2846,6 +2879,48 @@
     } catch (e) {}
   }
 
+  /* ---------- harga Large asli di kartu grid ----------
+     Data menu live hanya membawa harga Regular; harga Large asli ada di
+     opsi tiap produk. Setelah menu tampil, harga Large semua produk
+     minuman diambil DI LATAR BELAKANG (5 paralel) dan label "(L: ...)"
+     di kartu diperbarui begitu harganya tiba. */
+  function setCardLarge(btn, lp) {
+    var spans = btn.querySelectorAll("span");
+    for (var i = 0; i < spans.length; i++) {
+      if (spans[i].textContent.indexOf("(L:") === 0) {
+        spans[i].textContent = "(L: " + formatRp(Math.round(lp / 2)) + ")";
+        return;
+      }
+    }
+  }
+
+  function patchCard(it) {
+    var lp = cachedLarge(it); if (!lp) return;
+    var grid = document.getElementById("menu-grid"); if (!grid) return;
+    var btns = grid.querySelectorAll("button[onclick]");
+    for (var i = 0; i < btns.length; i++) {
+      var m = /openModal\((\d+)\)/.exec(btns[i].getAttribute("onclick") || "");
+      if (m && +m[1] === it.id) { setCardLarge(btns[i], lp); return; }
+    }
+  }
+
+  var bgSeq = 0;
+  function startBgLargePrices(code, items) {
+    var my = ++bgSeq;
+    var queue = items.filter(function (it) {
+      return it.liveId && (it.type === "drink" || it.type === "frappe")
+        && cachedLarge(it) === null && !((code + "|" + it.liveId) in priceCache);
+    }).sort(function (a, b) { return a.name.localeCompare(b.name, "id"); });
+    var idx = 0;
+    function worker() {
+      if (my !== bgSeq || ml.code !== code) return;
+      var it = queue[idx++];
+      if (!it) return;
+      ensureLargePrice(it).then(function () { setTimeout(worker, 120); });
+    }
+    for (var w = 0; w < 4; w++) worker();
+  }
+
   function ensureLargePrice(it) {
     var key = ml.code + "|" + it.liveId;
     if (key in priceCache) return Promise.resolve(priceCache[key]);
@@ -2854,7 +2929,8 @@
       var lp = null;
       try { lp = largePriceFromOptions(j.productOptions); } catch (e) {}
       priceCache[key] = lp || 0;
-      if (lp) refreshModalIfOpen(it);
+      queuePersistPrices(key);
+      if (lp) { refreshModalIfOpen(it); patchCard(it); }
       return priceCache[key];
     }).catch(function () { priceCache[key] = 0; return 0; });
     pricePending[key] = p;
