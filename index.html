@@ -2687,11 +2687,35 @@
     $("category-tabs").innerHTML = html;
   }
 
+  /* Nama-nama makanan, dipakai hanya untuk menebak jenis produk yang
+     HANYA muncul di kategori "Baru!" (belum muncul di kategori asalnya). */
+  var FOOD_WORDS = /panini|bagel|toast|croissant|roti|sandwich|donut|spaghetti|pasta|bread|cookie|cake|bun|puff|pastry|muffin|waffle|pancake/i;
+
   function convert(groups) {
     var items = []; ml.byId = {};
+    /* Jenis produk (minuman/makanan) ditentukan dari kategori ASAL
+       produk itu, bukan dari kategori tempat ia sedang tampil. Produk
+       yang sama umumnya muncul di 2 kategori: produk baru tampil di
+       "Baru!" TAPI juga selalu tampil di kategori aslinya (makanan di
+       Food, minuman di Coffee/Non Coffee). Dulu semua isi "Baru!"
+       dianggap minuman, jadi makanan baru seperti Panini & Bagel ikut
+       mendapat pilihan Regular/Large. Sekarang kumpulkan dulu jenis
+       asli tiap produk dari semua kategori SELAIN "Baru!". */
+    var realType = {};
+    groups.forEach(function (g) {
+      if (g.name === "Baru!") return;
+      (g.products || []).forEach(function (p) {
+        realType[+p.id] = g.name === "Kenangan Frappe" ? "frappe" : (DRINK_CATS[g.name] ? "drink" : "food");
+      });
+    });
     groups.forEach(function (g) {
       (g.products || []).forEach(function (p) {
-        var type = g.name === "Kenangan Frappe" ? "frappe" : (DRINK_CATS[g.name] ? "drink" : "food");
+        var type = realType[+p.id];
+        if (!type) {
+          /* Hanya ada di "Baru!": tebak dari namanya, sisanya minuman. */
+          type = FOOD_WORDS.test(p.name || "") ? "food"
+            : (g.name === "Kenangan Frappe" ? "frappe" : (DRINK_CATS[g.name] ? "drink" : "food"));
+        }
         var it = {
           id: 900000000 + (+p.id), liveId: +p.id, category: g.name, type: type, name: p.name,
           normalPrice: +p.price || 0, largePrice: null, emoji: "☕", image: p.image || "", bg: "bg-white",
