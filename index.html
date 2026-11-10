@@ -2662,6 +2662,15 @@
   var ml = { mode: "admin", code: null, loading: false, loadingCode: null, seq: 0, adminMenus: null, adminTabs: "", liveItems: [], byId: {} };
   var DRINK_CATS = { "Coffee": 1, "Non Coffee": 1, "Kenangan Frappe": 1, "Manual Brew": 1, "Baru!": 1 };
   var HIDDEN_CATS = { "Promo & Combo": 1, "Manual Brew": 1, "Kenangan at Home": 1, "Special Merchandise": 1 };
+  /* Minuman yang di aplikasi HANYA punya 1 ukuran (terverifikasi dari
+     opsi produk di server, 2026-11-11): Thai Tea Loaded & Fresh Lemonade
+     ukuran Size-nya hanya Large (Jumbo tidak dijual di situs ini), dan
+     harga dasar menunya memang harga Large itu; Butterscotch Sea Salt
+     Crumble, Milk Oreo Crumble & Babyccino Size-nya hanya Regular. */
+  var SINGLE_SIZE = {
+    "thai tea loaded": "Large", "fresh lemonade": "Large",
+    "butterscotch sea salt crumble": "Regular", "milk oreo crumble": "Regular", "babyccino": "Regular"
+  };
   var CAT_EMOJI = { "Coffee": "☕", "Non Coffee": "🍫", "Kenangan Frappe": "🍧", "Kenangan Toast": "🥪", "Food": "🥐", "Promo & Combo": "🎁", "Baru!": "🆕", "Manual Brew": "🫖", "Special Merchandise": "🛍️", "Kenangan at Home": "🏠" };
   function $(id) { return document.getElementById(id); }
   function esc(s) { return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
@@ -2716,9 +2725,12 @@
           type = FOOD_WORDS.test(p.name || "") ? "food"
             : (g.name === "Kenangan Frappe" ? "frappe" : (DRINK_CATS[g.name] ? "drink" : "food"));
         }
+        var onlySize = SINGLE_SIZE[(p.name || "").toLowerCase().trim()] || null;
         var it = {
           id: 900000000 + (+p.id), liveId: +p.id, category: g.name, type: type, name: p.name,
-          normalPrice: +p.price || 0, largePrice: null, emoji: "☕", image: p.image || "", bg: "bg-white",
+          normalPrice: +p.price || 0, largePrice: onlySize === "Large" ? (+p.price || 0) : null,
+          onlySize: onlySize,
+          emoji: "☕", image: p.image || "", bg: "bg-white",
           live: true, soldOut: !!p.isSoldOut, promo: !!p.hasPromotion, origPrice: +p.origPrice || 0
         };
         items.push(it); ml.byId[it.id] = it;
@@ -2815,6 +2827,11 @@
       var it = ml.byId[+m[1]]; if (!it) return;
       var lpB = cachedLarge(it);
       if (lpB) setCardLarge(b, lpB);
+      if (it.onlySize) {
+        /* produk 1 ukuran: label harga ukuran lain tidak ditampilkan */
+        var sps = b.querySelectorAll("span");
+        for (var spi = 0; spi < sps.length; spi++) if (sps[spi].textContent.indexOf("(L:") === 0) { sps[spi].remove(); break; }
+      }
       b.style.position = "relative";
       if (it.soldOut) {
         b.style.opacity = "0.55";
@@ -2963,11 +2980,34 @@
     return p;
   }
 
+  /* Produk 1 ukuran (SINGLE_SIZE): sembunyikan pilihan ukuran satunya
+     di modal dan paksa ukuran yang memang ada. Untuk yang hanya Large,
+     harga dasar produk memang harga Large-nya, jadi harga tidak berubah.
+     Produk lain: kedua pilihan ditampilkan lagi seperti biasa. */
+  function applySingleSize(it) {
+    var reg = document.querySelector('input[name="cup-size"][value="Regular"]');
+    var lrg = document.querySelector('input[name="cup-size"][value="Large"]');
+    if (!reg || !lrg) return;
+    var regBox = reg.closest("label"), lrgBox = lrg.closest("label");
+    if (regBox) regBox.style.display = "";
+    if (lrgBox) lrgBox.style.display = "";
+    if (!it || !it.onlySize) return;
+    if (it.onlySize === "Regular") {
+      if (lrgBox) lrgBox.style.display = "none";
+      reg.checked = true;
+    } else {
+      if (regBox) regBox.style.display = "none";
+      lrg.checked = true;
+    }
+    try { updateModalPrice(); } catch (e) {}
+  }
+
   var origOpen = openModal;
   openModal = function (id) {
     var it = ml.byId[id];
     if (it && it.soldOut) { alert("Maaf, menu ini sedang HABIS di outlet terpilih."); return; }
     origOpen.apply(this, arguments);
+    applySingleSize(it);
     if (it && it.liveId && ml.code) {
       var lp = cachedLarge(it);
       if (lp) applyLargeToModal(lp);
