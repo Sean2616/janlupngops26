@@ -2661,7 +2661,15 @@
   var API = "/api/kk";
   var ml = { mode: "admin", code: null, loading: false, loadingCode: null, seq: 0, adminMenus: null, adminTabs: "", liveItems: [], byId: {} };
   var DRINK_CATS = { "Coffee": 1, "Non Coffee": 1, "Kenangan Frappe": 1, "Manual Brew": 1, "Baru!": 1 };
-  var HIDDEN_CATS = { "Promo & Combo": 1, "Manual Brew": 1, "Kenangan at Home": 1, "Special Merchandise": 1 };
+  /* Hanya 5 kategori Kopi Kenangan ini yang ditampilkan di menu live,
+     di semua outlet, dalam urutan yang sama dengan tab menu standar.
+     Kategori lain dari server TIDAK ditampilkan: "Baru!", kategori
+     Chigo (Ala Carte, ChiMate, Sides, ChiMilan, ChiDrinks, Chigo
+     Coupon, seri Chi-Gourmet), Promo & Combo, Manual Brew, Kenangan
+     at Home, dan Special Merchandise. Isi "Baru!" selalu duplikat
+     kategori asalnya, jadi tidak ada menu Kopi Kenangan yang hilang. */
+  var CAT_ORDER = ["Coffee", "Non Coffee", "Kenangan Frappe", "Kenangan Toast", "Food"];
+  var ALLOWED_CATS = { "Coffee": 1, "Non Coffee": 1, "Kenangan Frappe": 1, "Kenangan Toast": 1, "Food": 1 };
   /* Minuman yang di aplikasi HANYA punya 1 ukuran (terverifikasi dari
      opsi produk di server, 2026-11-11): Thai Tea Loaded & Fresh Lemonade
      ukuran Size-nya hanya Large (Jumbo tidak dijual di situs ini), dan
@@ -2740,7 +2748,8 @@
   }
 
   function applyLive(code, groups, status) {
-    groups = groups.filter(function (g) { return !HIDDEN_CATS[g.name]; });
+    groups = groups.filter(function (g) { return ALLOWED_CATS[g.name]; });
+    groups.sort(function (a, b) { return CAT_ORDER.indexOf(a.name) - CAT_ORDER.indexOf(b.name); });
     ml.liveItems = convert(groups);
     if (!ml.liveItems.length) {
       applyAdmin("⚠️ Menu live outlet ini tidak punya kategori yang ditampilkan — menampilkan menu standar.");
