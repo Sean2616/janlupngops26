@@ -1953,7 +1953,7 @@
         const matchCat = currentCategory === "All" || m.category === currentCategory;
         const matchKey = m.name.toLowerCase().includes(keyword) || m.category.toLowerCase().includes(keyword);
         return matchCat && matchKey;
-      }).sort((a, b) => a.name.localeCompare(b.name, 'id'));
+      }).sort((a, b) => ((a.soldOut ? 1 : 0) - (b.soldOut ? 1 : 0)) || a.name.localeCompare(b.name, 'id'));
 
       if (filtered.length === 0) {
         grid.innerHTML = `<p class="col-span-full text-center text-xs text-gray-400 py-6">Menu tidak ditemukan.</p>`;
