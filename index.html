@@ -2655,6 +2655,10 @@
 /* ===== MENU UTAMA LIVE (sumber flappyyu via /api/kk) =====
    Saat outlet dipilih, daftar menu utama diganti menu live outlet itu dan
    tetap bisa dipesan lewat modal/keranjang/checkout yang sama.
+   Produk HABIS tetap tampil, abu-abu dengan label HABIS, di akhir tiap
+   kategori; yang dihitung di banner hanya produk yang TERSEDIA, supaya
+   angkanya stabil (server kadang mengirim menu lengkap dengan produk
+   habis, kadang hanya produk tersedia).
    Gagal -> pesan persisten + tombol "Coba lagi" (TIDAK memanggil ulang
    otomatis tanpa henti); kalau ada menu live outlet ini yang tersimpan
    < 15 menit lalu, menu tersimpan itu yang ditampilkan. Menu baru yang
@@ -2744,7 +2748,13 @@
 
   function convert(groups) {
     var items = []; ml.byId = {};
-    /* Jenis produk (minuman/makanan) ditentukan dari kategori ASAL
+    /* Produk HABIS TETAP ditampilkan, tapi di akhir tiap kategori,
+       abu-abu dengan label HABIS (sudah ada di renderMenus), dan TIDAK
+       dihitung di jumlah menu pada banner. Server kadang mengirim menu
+       lengkap DENGAN produk habis (126 produk, 52 di antaranya habis)
+       dan kadang hanya produk yang tersedia (74) — jadi yang dihitung
+       hanyalah produk yang tersedia, supaya angkanya stabil.
+       Jenis produk (minuman/makanan) ditentukan dari kategori ASAL
        produk itu, bukan dari kategori tempat ia sedang tampil. Produk
        yang sama umumnya muncul di 2 kategori: produk baru tampil di
        "Baru!" TAPI juga selalu tampil di kategori aslinya (makanan di
@@ -2778,6 +2788,10 @@
         items.push(it); ml.byId[it.id] = it;
       });
     });
+    /* Produk yang tersedia dulu, produk HABIS di belakang — pengurutan
+       stabil, jadi di dalam tiap kategori pun produk habis tampil
+       paling akhir. */
+    items.sort(function (a, b) { return (a.soldOut ? 1 : 0) - (b.soldOut ? 1 : 0); });
     return items;
   }
 
@@ -2798,10 +2812,16 @@
     renderMenus();
     var nm = (selectedOutlet && selectedOutlet.name) ? selectedOutlet.name : code;
     var openTxt = status ? (status.isOpen ? " 🟢 Outlet BUKA." : " 🔴 Outlet sedang TUTUP.") : "";
+    /* Yang dihitung hanya produk yang TERSEDIA, supaya angka di banner
+       stabil walau server kadang mengirim produk habis dan kadang
+       tidak. Produk habis tetap tampil abu-abu di daftar. */
+    var availCount = 0, soldCount = 0;
+    ml.liveItems.forEach(function (it) { if (it.soldOut) soldCount++; else availCount++; });
+    var countTxt = " — " + availCount + " produk tersedia" + (soldCount ? " (" + soldCount + " habis)" : "") + ".";
     if (stale) {
-      setStatus("⚡ <b>Menu LIVE terakhir</b> dari <b>" + esc(nm) + "</b> — " + ml.liveItems.length + " produk (diambil pukul " + esc(fmtTime(stale.at)) + "). Menu live gagal dimuat barusan, jadi menampilkan menu tersimpan." + retryBtn(), true);
+      setStatus("⚡ <b>Menu LIVE terakhir</b> dari <b>" + esc(nm) + "</b>" + countTxt + " (diambil pukul " + esc(fmtTime(stale.at)) + "). Menu live gagal dimuat barusan, jadi menampilkan menu tersimpan." + retryBtn(), true);
     } else {
-      setStatus("⚡ <b>Menu LIVE</b> dari <b>" + esc(nm) + "</b> — " + ml.liveItems.length + " produk." + openTxt + " Harga mengikuti harga resmi outlet; diskon 50% &amp; checkout tetap seperti biasa.", true);
+      setStatus("⚡ <b>Menu LIVE</b> dari <b>" + esc(nm) + "</b>" + countTxt + openTxt + " Harga mengikuti harga resmi outlet; diskon 50% &amp; checkout tetap seperti biasa.", true);
     }
     startBgLargePrices(code, ml.liveItems);
   }
@@ -2854,11 +2874,17 @@
       }
       /* Jangan diam-diam mengganti menu live yang sudah bagus dengan
          menu yang jauh lebih sedikit (respons upstream yang tidak
-         lengkap sesaat): pertahankan menu yang sedang tampil. */
-      var newCount = 0;
-      data.menuGroups.forEach(function (g) { if (ALLOWED_CATS[g.name]) newCount += (g.products || []).length; });
-      if (ml.mode === "live" && ml.code === code && ml.liveItems.length && newCount > 0 && newCount < Math.ceil(ml.liveItems.length * 0.5)) {
-        setStatus("⚠️ Menu live terbaru dari outlet ini tidak lengkap (" + newCount + " produk, sebelumnya " + ml.liveItems.length + ") — tetap menampilkan menu sebelumnya." + retryBtn(), true);
+         lengkap sesaat): pertahankan menu yang sedang tampil.
+         Yang dibandingkan hanya produk yang TERSEDIA, supaya respons
+         yang memuat produk habis tidak dianggap "lebih lengkap". */
+      var newCount = 0, curAvail = 0;
+      data.menuGroups.forEach(function (g) {
+        if (!ALLOWED_CATS[g.name]) return;
+        (g.products || []).forEach(function (p) { if (!p.isSoldOut) newCount++; });
+      });
+      ml.liveItems.forEach(function (it) { if (!it.soldOut) curAvail++; });
+      if (ml.mode === "live" && ml.code === code && curAvail && newCount > 0 && newCount < Math.ceil(curAvail * 0.5)) {
+        setStatus("⚠️ Menu live terbaru dari outlet ini tidak lengkap (" + newCount + " produk tersedia, sebelumnya " + curAvail + ") — tetap menampilkan menu sebelumnya." + retryBtn(), true);
         return;
       }
       applyLive(code, data.menuGroups, res[1]);
@@ -3031,7 +3057,7 @@
   function startBgLargePrices(code, items) {
     var my = ++bgSeq;
     var queue = items.filter(function (it) {
-      return it.liveId && (it.type === "drink" || it.type === "frappe")
+      return it.liveId && !it.soldOut && (it.type === "drink" || it.type === "frappe")
         && cachedLarge(it) === null && !((code + "|" + it.liveId) in priceCache);
     }).sort(function (a, b) { return a.name.localeCompare(b.name, "id"); });
     var idx = 0;
