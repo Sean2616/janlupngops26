@@ -25,6 +25,16 @@ const UPSTREAM = "https://flappyyu.store";
 const ROUTES = { menu: "/api/menu", options: "/api/product-options", status: "/api/store-status" };
 const CODE_RE = /^[A-Za-z0-9.\-]{1,64}$/;
 
+// Cache singkat untuk menu yang BERHASIL diambil (per outlet, 90 detik).
+// Upstream kadang sangat lambat dan isi menunya bisa berubah antar
+// panggilan dalam hitungan detik, jadi pemuatan ulang dalam waktu singkat
+// mengembalikan menu yang sama tanpa memanggil upstream lagi. Cache ini
+// hanya di memori (best-effort): kalau function-nya cold start, cache
+// kosong dan upstream dipanggil seperti biasa. Yang gagal / tidak
+// lengkap TIDAK pernah di-cache.
+const MENU_CACHE_TTL_MS = 90 * 1000;
+const menuCache = new Map(); // store_code -> { at, json }
+
 function send(res, status, obj) {
   res.statusCode = status;
   res.setHeader("Content-Type", "application/json; charset=utf-8");
@@ -59,6 +69,11 @@ module.exports = async function handler(req, res) {
   const storeCode = String(body.store_code || "");
   if (!CODE_RE.test(storeCode)) return send(res, 400, { message: "store_code tidak valid." });
 
+  if (body.type === "menu") {
+    const hit = menuCache.get(storeCode);
+    if (hit && Date.now() - hit.at < MENU_CACHE_TTL_MS) return send(res, 200, hit.json);
+  }
+
   let payload;
   if (body.type === "menu") {
     payload = { store_code: storeCode };
@@ -88,6 +103,16 @@ module.exports = async function handler(req, res) {
     try { json = JSON.parse(text); } catch (e) { json = null; }
     if (!r.ok || !json) {
       return send(res, 502, { message: "Server sumber menu menjawab " + r.status + ". Coba lagi sebentar." });
+    }
+    if (body.type === "menu") {
+      // Jangan teruskan (dan jangan cache) respons yang tidak lengkap:
+      // frontend menganggapnya "menu belum tersedia" dan akan mencoba
+      // lagi / menampilkan menu tersimpan, bukan menu kosong.
+      if (!Array.isArray(json.menuGroups) || !json.menuGroups.length) {
+        return send(res, 502, { message: "Server sumber menu mengembalikan data yang tidak lengkap. Coba lagi sebentar." });
+      }
+      if (menuCache.size > 500) menuCache.clear();
+      menuCache.set(storeCode, { at: Date.now(), json });
     }
     return send(res, 200, json);
   } catch (e) {

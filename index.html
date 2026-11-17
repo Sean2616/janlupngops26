@@ -2655,11 +2655,14 @@
 /* ===== MENU UTAMA LIVE (sumber flappyyu via /api/kk) =====
    Saat outlet dipilih, daftar menu utama diganti menu live outlet itu dan
    tetap bisa dipesan lewat modal/keranjang/checkout yang sama.
-   Gagal/kosong -> otomatis kembali ke menu standar (admin). */
+   Gagal -> pesan persisten + tombol "Coba lagi" (TIDAK memanggil ulang
+   otomatis tanpa henti); kalau ada menu live outlet ini yang tersimpan
+   < 15 menit lalu, menu tersimpan itu yang ditampilkan. Menu baru yang
+   jauh lebih sedikit dari menu yang sedang tampil tidak menggantikannya. */
 (function () {
   "use strict";
   var API = "/api/kk";
-  var ml = { mode: "admin", code: null, loading: false, loadingCode: null, seq: 0, adminMenus: null, adminTabs: "", liveItems: [], byId: {} };
+  var ml = { mode: "admin", code: null, loading: false, loadingCode: null, seq: 0, adminMenus: null, adminTabs: "", liveItems: [], byId: {}, failed: null };
   var DRINK_CATS = { "Coffee": 1, "Non Coffee": 1, "Kenangan Frappe": 1, "Manual Brew": 1, "Baru!": 1 };
   /* Hanya 5 kategori Kopi Kenangan ini yang ditampilkan di menu live,
      di semua outlet, dalam urutan yang sama dengan tab menu standar.
@@ -2682,15 +2685,46 @@
   var CAT_EMOJI = { "Coffee": "☕", "Non Coffee": "🍫", "Kenangan Frappe": "🍧", "Kenangan Toast": "🥪", "Food": "🥐", "Promo & Combo": "🎁", "Baru!": "🆕", "Manual Brew": "🫖", "Special Merchandise": "🛍️", "Kenangan at Home": "🏠" };
   function $(id) { return document.getElementById(id); }
   function esc(s) { return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
+  /* Tiap percobaan dibatasi 15 detik: kalau proxy/upstream menggantung,
+     gagal dengan jelas dan biarkan logika retry/fallback yang bekerja,
+     jangan biarkan banner loading stuck tanpa batas. */
   function postKK(p) {
-    return fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(p) })
-      .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); });
+    var ctrl = null, timer = null;
+    try {
+      ctrl = new AbortController();
+      timer = setTimeout(function () { try { ctrl.abort(); } catch (e) {} }, 15000);
+    } catch (e) { ctrl = null; }
+    var opts = { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(p) };
+    if (ctrl) opts.signal = ctrl.signal;
+    return fetch(API, opts)
+      .then(function (r) { if (timer) clearTimeout(timer); if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+      .catch(function (e) { if (timer) clearTimeout(timer); throw e; });
   }
   function setStatus(html, live) {
     var s = $("ml-status"); if (!s) return;
     s.innerHTML = html;
     s.style.background = live ? "#e8fbe8" : "#fff8e7";
   }
+
+  /* ---------- menu live terakhir (cache lokal) ----------
+     Upstream kadang lambat/gagal sesaat; kalau menu live gagal dimuat
+     tapi ada menu live outlet ini yang tersimpan < 15 menit lalu,
+     tampilkan itu (dengan keterangan) daripada menu standar. */
+  var LIVE_CACHE_KEY = "janlup_live_menu_v1";
+  var LIVE_CACHE_TTL = 15 * 60 * 1000;
+  function saveLiveCache(code, groups) {
+    try { localStorage.setItem(LIVE_CACHE_KEY, JSON.stringify({ code: code, at: Date.now(), groups: groups })); } catch (e) {}
+  }
+  function loadLiveCache(code) {
+    try {
+      var c = JSON.parse(localStorage.getItem(LIVE_CACHE_KEY) || "null");
+      if (!c || c.code !== code || !c.groups || !c.groups.length) return null;
+      if (Date.now() - (c.at || 0) > LIVE_CACHE_TTL) return null;
+      return c;
+    } catch (e) { return null; }
+  }
+  function fmtTime(ms) { try { return new Date(ms).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }); } catch (e) { return ""; } }
+  function retryBtn() { return ' <button type="button" onclick="retryLiveMenu()" class="saweria-btn bg-white px-2 py-0.5 text-[11px] font-bold">🔄 Coba lagi</button>'; }
 
   /* ---------- snapshot menu standar (admin) ---------- */
   ml.adminMenus = menus.slice();
@@ -2747,22 +2781,28 @@
     return items;
   }
 
-  function applyLive(code, groups, status) {
+  function applyLive(code, groups, status, stale) {
     groups = groups.filter(function (g) { return ALLOWED_CATS[g.name]; });
     groups.sort(function (a, b) { return CAT_ORDER.indexOf(a.name) - CAT_ORDER.indexOf(b.name); });
     ml.liveItems = convert(groups);
     if (!ml.liveItems.length) {
-      applyAdmin("⚠️ Menu live outlet ini tidak punya kategori yang ditampilkan — menampilkan menu standar.");
+      ml.failed = { code: code };
+      applyAdmin("⚠️ Menu live outlet ini tidak punya kategori yang ditampilkan — menampilkan menu standar." + retryBtn());
       return;
     }
     menus = ml.liveItems;
     currentCategory = "All";
-    ml.mode = "live"; ml.code = code;
+    ml.mode = "live"; ml.code = code; ml.failed = null;
+    if (!stale) saveLiveCache(code, groups);
     buildTabs(groups.map(function (g) { return g.name; }));
     renderMenus();
     var nm = (selectedOutlet && selectedOutlet.name) ? selectedOutlet.name : code;
     var openTxt = status ? (status.isOpen ? " 🟢 Outlet BUKA." : " 🔴 Outlet sedang TUTUP.") : "";
-    setStatus("⚡ <b>Menu LIVE</b> dari <b>" + esc(nm) + "</b> — " + ml.liveItems.length + " produk." + openTxt + " Harga mengikuti harga resmi outlet; diskon 50% &amp; checkout tetap seperti biasa.", true);
+    if (stale) {
+      setStatus("⚡ <b>Menu LIVE terakhir</b> dari <b>" + esc(nm) + "</b> — " + ml.liveItems.length + " produk (diambil pukul " + esc(fmtTime(stale.at)) + "). Menu live gagal dimuat barusan, jadi menampilkan menu tersimpan." + retryBtn(), true);
+    } else {
+      setStatus("⚡ <b>Menu LIVE</b> dari <b>" + esc(nm) + "</b> — " + ml.liveItems.length + " produk." + openTxt + " Harga mengikuti harga resmi outlet; diskon 50% &amp; checkout tetap seperti biasa.", true);
+    }
     startBgLargePrices(code, ml.liveItems);
   }
 
@@ -2776,8 +2816,22 @@
     if (reasonHtml) setStatus(reasonHtml, false);
   }
 
+  function onOutletFail(code, note) {
+    /* Gagal total: JANGAN biarkan mlCheck memanggil ulang otomatis tanpa
+       henti (itu yang dulu membuat banner loading stuck dan pesan gagal
+       hanya berkedip). Catat kegagalan untuk kode ini; percobaan
+       berikutnya hanya kalau outlet diganti atau pengguna menekan
+       "Coba lagi". Kalau ada menu live tersimpan untuk outlet ini,
+       tampilkan itu daripada menu standar. */
+    ml.failed = { code: code };
+    var cached = loadLiveCache(code);
+    if (cached) { applyLive(code, cached.groups, null, cached); return; }
+    applyAdmin("⚠️ Gagal mengambil menu live (server sibuk) — menampilkan menu standar. Coba lagi bila perlu." + retryBtn() + note);
+  }
+
   function onOutlet(code) {
     if (ml.loadingCode === code) return;
+    if (ml.failed && ml.failed.code === code) ml.failed = null;
     var note = "";
     if (cart && cart.length) { cart = []; renderCart(); note = " Keranjang dikosongkan karena outlet/menu diganti."; }
     ml.loading = true; ml.loadingCode = code;
@@ -2795,14 +2849,23 @@
       ml.loading = false; ml.loadingCode = null;
       var data = res[0];
       if (!data || !data.menuGroups || !data.menuGroups.length) {
-        applyAdmin("⚠️ Menu live belum tersedia untuk outlet ini — menampilkan menu standar." + note);
+        onOutletFail(code, note);
+        return;
+      }
+      /* Jangan diam-diam mengganti menu live yang sudah bagus dengan
+         menu yang jauh lebih sedikit (respons upstream yang tidak
+         lengkap sesaat): pertahankan menu yang sedang tampil. */
+      var newCount = 0;
+      data.menuGroups.forEach(function (g) { if (ALLOWED_CATS[g.name]) newCount += (g.products || []).length; });
+      if (ml.mode === "live" && ml.code === code && ml.liveItems.length && newCount > 0 && newCount < Math.ceil(ml.liveItems.length * 0.5)) {
+        setStatus("⚠️ Menu live terbaru dari outlet ini tidak lengkap (" + newCount + " produk, sebelumnya " + ml.liveItems.length + ") — tetap menampilkan menu sebelumnya." + retryBtn(), true);
         return;
       }
       applyLive(code, data.menuGroups, res[1]);
     }).catch(function () {
       if (seq !== ml.seq) return;
       ml.loading = false; ml.loadingCode = null;
-      applyAdmin("⚠️ Gagal mengambil menu live (server sibuk) — menampilkan menu standar. Pilih ulang outlet untuk mencoba lagi." + note);
+      onOutletFail(code, note);
     });
   }
 
@@ -2816,9 +2879,17 @@
       if (!av || av.classList.contains("hidden")) { menus = ml.liveItems; renderMenus(); }
     }
     var code = selectedOutlet && selectedOutlet.code;
-    if (code) { if (code !== ml.code && code !== ml.loadingCode) onOutlet(code); }
-    else if (ml.mode === "live" || ml.loading) { ml.seq++; ml.loading = false; ml.loadingCode = null; applyAdmin("📌 Outlet dikosongkan — kembali ke menu standar. Pilih outlet untuk menu LIVE-nya."); }
+    if (code) { if (code !== ml.code && code !== ml.loadingCode && !(ml.failed && ml.failed.code === code)) onOutlet(code); }
+    else if (ml.mode === "live" || ml.loading) { ml.seq++; ml.loading = false; ml.loadingCode = null; ml.failed = null; applyAdmin("📌 Outlet dikosongkan — kembali ke menu standar. Pilih outlet untuk menu LIVE-nya."); }
   }
+
+  /* Tombol "Coba lagi" di banner status (dipanggil dari onclick inline). */
+  window.retryLiveMenu = function () {
+    var c = selectedOutlet && selectedOutlet.code;
+    if (!c) return;
+    ml.failed = null;
+    onOutlet(c);
+  };
 
   var origHandle = handleOutletInput;
   handleOutletInput = function () { origHandle.apply(this, arguments); mlCheck(); };
