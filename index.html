@@ -613,10 +613,15 @@
 
       <!-- BAGIAN 5: PANEL INVOICE CUSTOMER -->
       <section class="saweria-card bg-white p-5 space-y-4">
-        <h2 class="text-base font-bold border-b-2 border-black pb-2 flex items-center gap-2">
-          <span>🧾</span> 5. Panel Invoice Customer (<span id="adm-invoice-count">0</span>)
-        </h2>
-        <p class="text-[11px] text-gray-600">Setiap customer yang checkout otomatis masuk ke panel ini. Ubah status atau isi Nomor Order Kopi Kenangan, maka tampilan di halaman customer langsung ikut ter-update!</p>
+        <div class="flex flex-wrap justify-between items-center gap-2 border-b-2 border-black pb-2">
+          <h2 class="text-base font-bold flex items-center gap-2">
+            <span>🧾</span> 5. Panel Invoice Customer (<span id="adm-invoice-count">0</span>)
+          </h2>
+          <button type="button" onclick="pullFromCloudIfEnabled(true, true)" class="saweria-btn bg-[#d8f3dc] px-2.5 py-1 text-[10px] font-bold">
+            🔄 Sinkron &amp; Refresh Pesanan
+          </button>
+        </div>
+        <p class="text-[11px] text-gray-600">Setiap customer yang checkout otomatis masuk ke panel ini dan disinkronkan secara aman (anti-hilang / anti-ketimpa). Ubah status atau isi Nomor Order Kopi Kenangan, maka tampilan di halaman customer langsung ikut ter-update!</p>
         <div class="flex flex-col sm:flex-row gap-2">
           <input type="text" id="adm-search-invoice" oninput="renderAdminInvoiceList()" placeholder="Cari: no. invoice / nama customer / outlet..." class="saweria-input w-full p-2 text-xs">
           <select id="adm-filter-invoice-status" onchange="renderAdminInvoiceList()" class="saweria-input p-2 text-xs font-bold shrink-0">
@@ -791,6 +796,7 @@
     const SETTINGS_KEY = "ngopi_settings_v4";
     const MENUS_KEY = "ngopi_menus_v2";
     const INVOICE_KEY = "janlup_invoices_v1";
+    const DELETED_INVOICE_KEY = "janlup_deleted_invoices_v1";
     const WIFI_KEY = "janlup_wifi_v1";
     const CLOUD_URL_KEY = "janlup_cloud_db_url";
 
@@ -914,6 +920,7 @@
           renderAdminWifiEditor();
           renderAdminMenuList();
           renderAdminInvoiceList();
+          pullFromCloudIfEnabled(false);
         } else {
           adminDashboardEl.classList.add("hidden");
           adminLoginEl.classList.remove("hidden");
@@ -964,15 +971,69 @@
       }
     }
 
+    function loadDeletedInvoiceIds() {
+      try { return JSON.parse(localStorage.getItem(DELETED_INVOICE_KEY)) || []; }
+      catch (e) { return []; }
+    }
+
+    function saveDeletedInvoiceIds(ids) {
+      try { localStorage.setItem(DELETED_INVOICE_KEY, JSON.stringify(Array.from(new Set(ids)))); } catch (e) {}
+    }
+
+    function normalizeCloudInvoices(rawInvoices) {
+      if (!rawInvoices) return [];
+      if (Array.isArray(rawInvoices)) return rawInvoices.filter(x => x && x.id);
+      if (typeof rawInvoices === "object") return Object.values(rawInvoices).filter(x => x && x.id);
+      return [];
+    }
+
+    function mergeInvoicesList(localList, cloudList, deletedIds = []) {
+      const delSet = new Set((deletedIds || []).filter(Boolean));
+      const map = new Map();
+      const pickNewer = (existing, incoming) => {
+        if (!existing) return incoming;
+        const tEx = existing.updatedAt || (existing.createdAt ? new Date(existing.createdAt).getTime() : 0) || 0;
+        const tIn = incoming.updatedAt || (incoming.createdAt ? new Date(incoming.createdAt).getTime() : 0) || 0;
+        if (tIn !== tEx) return tIn > tEx ? incoming : existing;
+        // Jika waktu update sama, utamakan yang sudah ada nomor order atau status lebih maju
+        const sEx = typeof ORDER_STEPS !== "undefined" ? ORDER_STEPS.indexOf(existing.status) : -1;
+        const sIn = typeof ORDER_STEPS !== "undefined" ? ORDER_STEPS.indexOf(incoming.status) : -1;
+        if (sIn > sEx || (incoming.orderNo && !existing.orderNo)) return incoming;
+        return existing;
+      };
+      (cloudList || []).forEach(inv => {
+        if (inv && inv.id && !delSet.has(inv.id)) map.set(inv.id, inv);
+      });
+      (localList || []).forEach(inv => {
+        if (inv && inv.id && !delSet.has(inv.id)) {
+          map.set(inv.id, pickNewer(map.get(inv.id), inv));
+        }
+      });
+      return Array.from(map.values()).sort((a, b) => {
+        const ta = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const tb = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return tb - ta;
+      });
+    }
+
+    function getAdminMenusSnapshot() {
+      // Jangan pernah menyimpan daftar menu live outlet (id >= 900000000 / item.live) sebagai menu standar Admin!
+      if (Array.isArray(menus) && menus.length > 0 && !menus.some(m => m && (m.live || m.id >= 900000000))) {
+        return menus;
+      }
+      return loadMenusFromStorage().filter(m => m && !m.live && !(m.id >= 900000000));
+    }
+
     function notifySync(type) {
       if (syncChannel) syncChannel.postMessage({ type: type, timestamp: Date.now() });
-      pushToCloudIfEnabled();
+      pushToCloudIfEnabled(type);
     }
 
     function saveToStorage(syncType = "all") {
       try {
+        const cleanMenus = getAdminMenusSnapshot();
         localStorage.setItem(SETTINGS_KEY, JSON.stringify(storeSettings));
-        localStorage.setItem(MENUS_KEY, JSON.stringify(menus));
+        localStorage.setItem(MENUS_KEY, JSON.stringify(cleanMenus));
         localStorage.setItem(WIFI_KEY, JSON.stringify(wifiData));
         notifySync(syncType);
         refreshAllUI();
@@ -985,29 +1046,101 @@
       return (localStorage.getItem(CLOUD_URL_KEY) || "https://janlupngops-default-rtdb.asia-southeast1.firebasedatabase.app").trim().replace(/\/+$/, "");
     }
 
-    async function pushToCloudIfEnabled() {
+    async function pushToCloudIfEnabled(syncType = "all") {
       const baseUrl = getCloudDbUrl();
       if (!baseUrl) return;
       try {
-        const payload = { settings: storeSettings, menus: menus, wifi: wifiData, invoices: loadInvoices(), updatedAt: Date.now() };
-        await fetch(`${baseUrl}/janlupngops.json`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+        // Tarik data cloud terbaru dulu agar invoice dari HP customer lain TIDAK PERNAH tertimpa / hilang!
+        let cloudData = null;
+        try {
+          const getRes = await fetch(`${baseUrl}/janlupngops.json`, { cache: "no-store" });
+          if (getRes.ok) cloudData = await getRes.json();
+        } catch (e) {}
+
+        const cloudDeleted = Array.isArray(cloudData && cloudData.deletedInvoices) ? cloudData.deletedInvoices : [];
+        const mergedDeleted = Array.from(new Set([...loadDeletedInvoiceIds(), ...cloudDeleted]));
+        saveDeletedInvoiceIds(mergedDeleted);
+
+        const cloudInvoices = normalizeCloudInvoices(cloudData && cloudData.invoices);
+        const localInvoices = loadInvoices();
+        const mergedInvoices = mergeInvoicesList(localInvoices, cloudInvoices, mergedDeleted);
+        localStorage.setItem(INVOICE_KEY, JSON.stringify(mergedInvoices));
+
+        if (syncType === "invoices") {
+          // Hanya update node invoices & deletedInvoices (PATCH) supaya cepat & aman
+          await fetch(`${baseUrl}/janlupngops.json`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              invoices: mergedInvoices,
+              deletedInvoices: mergedDeleted,
+              updatedAt: Date.now()
+            })
+          });
+        } else {
+          const cleanMenus = getAdminMenusSnapshot();
+          const payload = {
+            settings: storeSettings,
+            menus: cleanMenus,
+            wifi: wifiData,
+            invoices: mergedInvoices,
+            deletedInvoices: mergedDeleted,
+            updatedAt: Date.now()
+          };
+          await fetch(`${baseUrl}/janlupngops.json`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+        }
       } catch (e) { console.warn("Gagal sinkronisasi ke Cloud DB:", e); }
     }
 
-    async function pullFromCloudIfEnabled() {
+    async function pullFromCloudIfEnabled(showToast = false, onlyInvoices = false) {
       const baseUrl = getCloudDbUrl();
       if (!baseUrl) return;
       try {
-        const res = await fetch(`${baseUrl}/janlupngops.json`);
+        const res = await fetch(`${baseUrl}/janlupngops.json`, { cache: "no-store" });
         if (!res.ok) return;
         const data = await res.json();
         if (!data) return;
-        if (data.settings) { storeSettings = { ...DEFAULT_SETTINGS, ...data.settings }; localStorage.setItem(SETTINGS_KEY, JSON.stringify(storeSettings)); }
-        if (Array.isArray(data.menus)) { menus = data.menus; localStorage.setItem(MENUS_KEY, JSON.stringify(menus)); }
-        if (data.wifi) { wifiData = { username: data.wifi.username || DEFAULT_WIFI.username, passwords: { ...DEFAULT_WIFI.passwords, ...(data.wifi.passwords || {}) } }; localStorage.setItem(WIFI_KEY, JSON.stringify(wifiData)); }
-        if (Array.isArray(data.invoices)) { localStorage.setItem(INVOICE_KEY, JSON.stringify(data.invoices)); }
-        refreshAllUI();
-      } catch (e) { console.warn("Gagal menarik data dari Cloud DB:", e); }
+        if (!onlyInvoices) {
+          if (data.settings) { storeSettings = { ...DEFAULT_SETTINGS, ...data.settings }; localStorage.setItem(SETTINGS_KEY, JSON.stringify(storeSettings)); }
+          if (Array.isArray(data.menus) && !data.menus.some(m => m && (m.live || m.id >= 900000000))) {
+            localStorage.setItem(MENUS_KEY, JSON.stringify(data.menus));
+            if (!menus.some(m => m && (m.live || m.id >= 900000000))) menus = data.menus;
+          }
+          if (data.wifi) { wifiData = { username: data.wifi.username || DEFAULT_WIFI.username, passwords: { ...DEFAULT_WIFI.passwords, ...(data.wifi.passwords || {}) } }; localStorage.setItem(WIFI_KEY, JSON.stringify(wifiData)); }
+        }
+
+        const cloudDeleted = Array.isArray(data.deletedInvoices) ? data.deletedInvoices : [];
+        const mergedDeleted = Array.from(new Set([...loadDeletedInvoiceIds(), ...cloudDeleted]));
+        saveDeletedInvoiceIds(mergedDeleted);
+
+        const cloudInvoices = normalizeCloudInvoices(data.invoices);
+        const localInvoices = loadInvoices();
+        const mergedInvoices = mergeInvoicesList(localInvoices, cloudInvoices, mergedDeleted);
+        localStorage.setItem(INVOICE_KEY, JSON.stringify(mergedInvoices));
+
+        // Jika di lokal ada invoice yang belum masuk ke cloud, dorong balik ke cloud
+        if (mergedInvoices.length > cloudInvoices.length) {
+          fetch(`${baseUrl}/janlupngops.json`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ invoices: mergedInvoices, deletedInvoices: mergedDeleted, updatedAt: Date.now() })
+          }).catch(() => {});
+        }
+
+        if (onlyInvoices) {
+          renderAdminInvoiceList();
+        } else {
+          refreshAllUI();
+        }
+        if (showToast) alert(`✅ Sinkronisasi berhasil! Total ${mergedInvoices.length} invoice pesanan tersimpan.`);
+      } catch (e) {
+        console.warn("Gagal menarik data dari Cloud DB:", e);
+        if (showToast) alert("⚠️ Gagal menghubungi Cloud DB. Pastikan koneksi internet stabil.");
+      }
     }
 
     function refreshAllUI() {
@@ -1357,6 +1490,7 @@
         id: generateInvoiceId(list),
         deviceId: getDeviceId(), // Penanda khusus HP pelanggan pembuat order
         createdAt: new Date().toISOString(),
+        updatedAt: Date.now(),
         customer: name,
         customerPhone: phone || "",
         orderNo: "",
@@ -1580,18 +1714,23 @@
       </div>`;
     }
 
-    function checkUrlTrackSync() {
+    async function checkUrlTrackSync() {
       const params = new URLSearchParams(window.location.search);
       const trackId = params.get("track");
       if (!trackId) return;
       const st = params.get("st");
       const ono = params.get("ono");
+      await pullFromCloudIfEnabled(false);
       const list = loadInvoices();
       const inv = list.find(i => i.id.toUpperCase() === trackId.trim().toUpperCase());
       if (inv) {
-        if (st && INVOICE_STATUSES.includes(st)) inv.status = st;
-        if (ono !== null) inv.orderNo = ono;
-        saveInvoices(list);
+        let changed = false;
+        if (st && INVOICE_STATUSES.includes(st) && inv.status !== st) { inv.status = st; changed = true; }
+        if (ono !== null && inv.orderNo !== ono) { inv.orderNo = ono; changed = true; }
+        if (changed) {
+          inv.updatedAt = Date.now();
+          saveInvoices(list);
+        }
       }
       openTrackModal(trackId.trim().toUpperCase());
     }
@@ -2564,6 +2703,7 @@
       const inv = list.find(i => i.id === id);
       if (!inv) return;
       inv.status = status;
+      inv.updatedAt = Date.now();
       saveInvoices(list);
       renderAdminInvoiceList();
     }
@@ -2574,6 +2714,7 @@
       const inv = list.find(i => i.id === id);
       if (!inv || !input) return;
       inv.orderNo = input.value.trim();
+      inv.updatedAt = Date.now();
       saveInvoices(list);
       renderAdminInvoiceList();
       alert(inv.orderNo ? `✅ Nomor order ${inv.orderNo} tersimpan untuk invoice ${id}!` : `Nomor order dikosongkan untuk invoice ${id}.`);
@@ -2592,6 +2733,7 @@
       const latestNoInput = document.getElementById("ordno-" + id);
       if (latestNoInput && latestNoInput.value.trim() !== inv.orderNo) {
         inv.orderNo = latestNoInput.value.trim();
+        inv.updatedAt = Date.now();
         saveInvoices(list);
         renderAdminInvoiceList();
       }
@@ -2616,6 +2758,11 @@
 
     function deleteInvoice(id) {
       if (!confirm("Hapus invoice " + id + " dari panel ini?")) return;
+      const delIds = loadDeletedInvoiceIds();
+      if (!delIds.includes(id)) {
+        delIds.push(id);
+        saveDeletedInvoiceIds(delIds);
+      }
       saveInvoices(loadInvoices().filter(i => i.id !== id));
       renderAdminInvoiceList();
     }
@@ -2631,6 +2778,17 @@
     syncRouteView();
     pullFromCloudIfEnabled();
     checkUrlTrackSync();
+
+    // Auto-pull berkala saat Panel Admin sedang terbuka agar pesanan customer baru masuk otomatis
+    setInterval(() => {
+      const av = document.getElementById("admin-view");
+      if (av && !av.classList.contains("hidden")) {
+        const activeTag = document.activeElement ? document.activeElement.tagName : "";
+        if (activeTag !== "INPUT" && activeTag !== "SELECT" && activeTag !== "TEXTAREA") {
+          pullFromCloudIfEnabled(false, true);
+        }
+      }
+    }, 15000);
 
     // ==========================================
     // SHORTCUT HUBUNGI CS VIA WHATSAPP
