@@ -146,12 +146,12 @@
                 type="text"
                 id="inp-outlet"
                 autocomplete="off"
-                placeholder="Ketik nama outlet, jalan, atau kota (cth: Dumai / Bekasi / Tebet)..."
-                class="saweria-input w-full p-2.5 pr-8 text-sm"
-                onfocus="handleOutletInput()"
-                oninput="handleOutletInput()"
+                placeholder="Cari nama outlet, jalan, atau kota..."
+                class="saweria-input w-full p-2.5 pr-8 text-xs sm:text-sm placeholder:text-[11px] sm:placeholder:text-xs"
+                onfocus="handleOutletInput(true)"
+                oninput="handleOutletInput(true)"
               >
-              <button type="button" id="btn-clear-outlet" onclick="clearOutletInput()" title="Hapus pilihan" class="hidden absolute right-2.5 top-2.5 w-5 h-5 bg-gray-200 hover:bg-red-300 border border-black rounded-full flex items-center justify-center font-bold text-[10px]">✕</button>
+              <button type="button" id="btn-clear-outlet" onclick="clearOutletInput()" title="Hapus pilihan" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 w-5 h-5 bg-gray-200 hover:bg-red-300 border border-black rounded-full flex items-center justify-center font-bold text-[10px]">✕</button>
 
               <!-- Kotak Dropdown Hasil Pencarian Outlet Otomatis -->
               <div id="outlet-dropdown" class="hidden absolute left-0 right-0 top-full mt-1 bg-white border-2 border-black rounded-xl shadow-[4px_4px_0px_0px_#000] max-h-64 overflow-y-auto z-30 divide-y divide-dashed divide-gray-300"></div>
@@ -192,32 +192,32 @@
           </div>
 
           <div class="relative mb-3">
-            <input type="text" id="search-menu" oninput="renderMenus()" placeholder="Cari kopi, frappe, toast, atau roti..." class="saweria-input w-full pl-9 pr-3 py-2.5 text-xs font-medium">
-            <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-gray-400 text-xs"></i>
+            <input type="text" id="search-menu" oninput="renderMenus()" placeholder="Cari kopi, frappe, toast..." class="saweria-input w-full pl-9 pr-3 py-2.5 text-xs font-medium placeholder:text-[11px] sm:placeholder:text-xs">
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
           </div>
 
           <div id="ml-status" class="text-[11px] font-semibold border-2 border-black rounded-lg px-3 py-2 mb-3 bg-[#fff8e7]">📌 Menu standar ditampilkan. Pilih outlet di atas — menu akan otomatis berubah jadi menu LIVE outlet itu.</div>
 
-          <div class="flex items-stretch gap-1.5 mb-4">
-            <button type="button" onclick="scrollCategoryTabs(-1)" class="saweria-btn bg-white w-7 flex items-center justify-center text-[10px] font-bold shrink-0">◀</button>
-            <div class="flex gap-2 overflow-x-auto no-scrollbar scroll-smooth pb-1 flex-1 cursor-grab" id="category-tabs">
-              <button onclick="setCategory('All')" data-cat="All" class="cat-btn saweria-btn bg-[#faae2b] active px-3 py-1.5 text-xs font-bold shrink-0">🌟 Semua</button>
-              <button onclick="setCategory('Coffee')" data-cat="Coffee" class="cat-btn saweria-btn bg-white px-3 py-1.5 text-xs font-bold shrink-0">☕ Coffee</button>
-              <button onclick="setCategory('Non Coffee')" data-cat="Non Coffee" class="cat-btn saweria-btn bg-white px-3 py-1.5 text-xs font-bold shrink-0">🍫 Non Coffee</button>
-              <button onclick="setCategory('Kenangan Frappe')" data-cat="Kenangan Frappe" class="cat-btn saweria-btn bg-white px-3 py-1.5 text-xs font-bold shrink-0">🍧 Kenangan Frappe</button>
-              <button onclick="setCategory('Kenangan Toast')" data-cat="Kenangan Toast" class="cat-btn saweria-btn bg-white px-3 py-1.5 text-xs font-bold shrink-0">🥪 Kenangan Toast</button>
-              <button onclick="setCategory('Food')" data-cat="Food" class="cat-btn saweria-btn bg-white px-3 py-1.5 text-xs font-bold shrink-0">🥐 Food</button>
+          <div class="flex items-center gap-2 mb-4">
+            <button type="button" onclick="scrollCategoryTabs(-1)" aria-label="Geser kategori ke kiri" class="saweria-btn bg-white w-7 h-8 flex items-center justify-center text-[10px] font-bold shrink-0">◀</button>
+            <div class="flex gap-2 overflow-x-auto no-scrollbar scroll-smooth py-1 px-0.5 flex-1 min-w-0 cursor-grab" id="category-tabs">
+              <button onclick="setCategory('All')" data-cat="All" class="cat-btn saweria-btn bg-[#faae2b] active px-3 py-1.5 text-xs font-bold shrink-0 whitespace-nowrap">🌟 Semua</button>
+              <button onclick="setCategory('Coffee')" data-cat="Coffee" class="cat-btn saweria-btn bg-white px-3 py-1.5 text-xs font-bold shrink-0 whitespace-nowrap">☕ Coffee</button>
+              <button onclick="setCategory('Non Coffee')" data-cat="Non Coffee" class="cat-btn saweria-btn bg-white px-3 py-1.5 text-xs font-bold shrink-0 whitespace-nowrap">🍫 Non Coffee</button>
+              <button onclick="setCategory('Kenangan Frappe')" data-cat="Kenangan Frappe" class="cat-btn saweria-btn bg-white px-3 py-1.5 text-xs font-bold shrink-0 whitespace-nowrap">🍧 Kenangan Frappe</button>
+              <button onclick="setCategory('Kenangan Toast')" data-cat="Kenangan Toast" class="cat-btn saweria-btn bg-white px-3 py-1.5 text-xs font-bold shrink-0 whitespace-nowrap">🥪 Kenangan Toast</button>
+              <button onclick="setCategory('Food')" data-cat="Food" class="cat-btn saweria-btn bg-white px-3 py-1.5 text-xs font-bold shrink-0 whitespace-nowrap">🥐 Food</button>
             </div>
-            <button type="button" onclick="scrollCategoryTabs(1)" class="saweria-btn bg-[#faae2b] w-7 flex items-center justify-center text-[10px] font-bold shrink-0">▶</button>
+            <button type="button" onclick="scrollCategoryTabs(1)" aria-label="Geser kategori ke kanan" class="saweria-btn bg-[#faae2b] w-7 h-8 flex items-center justify-center text-[10px] font-bold shrink-0">▶</button>
           </div>
 
-          <div id="menu-grid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 max-h-[440px] lg:max-h-[640px] overflow-y-auto pr-1"></div>
+          <div id="menu-grid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 lg:max-h-[680px] lg:overflow-y-auto lg:pr-1"></div>
         </section>
 
       </div>
 
       <!-- KOLOM KANAN DESKTOP (STICKY SIDEBAR: STEP 3 STRUK + STEP 4 PICKUP & CHECKOUT) -->
-      <div class="lg:col-span-5 xl:col-span-4 space-y-6 lg:sticky lg:top-6">
+      <div class="lg:col-span-5 xl:col-span-4 space-y-6 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto no-scrollbar lg:pb-2">
 
         <!-- STEP 3: Keranjang / Struk Pesanan -->
         <section id="cart-section" class="saweria-card bg-[#e8f4f8] p-5 md:p-6">
@@ -285,23 +285,23 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-2.5">
             <div>
               <label class="block text-xs font-bold mb-1">Metode Order:</label>
-              <div class="saweria-input w-full p-2 text-xs font-bold bg-[#fff8e7] flex items-center justify-between">
-                <span>🏃 Pick Up di Kasir Outlet</span>
-                <span class="text-[10px] bg-[#faae2b] border border-black px-1.5 py-0.5 rounded uppercase">Pick Up Only</span>
+              <div class="saweria-input w-full p-2 text-xs font-bold bg-[#fff8e7] flex items-center justify-between gap-2">
+                <span class="min-w-0 truncate">🏃 Pick Up di Kasir<span class="hidden sm:inline"> Outlet</span></span>
+                <span class="text-[10px] bg-[#faae2b] border border-black px-1.5 py-0.5 rounded uppercase shrink-0 whitespace-nowrap">Pick Up Only</span>
               </div>
             </div>
             <div>
               <label class="block text-xs font-bold mb-1">Metode Pembayaran:</label>
-              <div class="saweria-input w-full p-2 text-xs font-bold bg-[#fff8e7] flex items-center justify-between">
-                <span class="flex items-center gap-1.5"><i class="fa-solid fa-qrcode text-sm"></i> QRIS (E-Wallet &amp; Bank)</span>
-                <span class="text-[10px] bg-[#faae2b] border border-black px-1.5 py-0.5 rounded uppercase">QRIS Only</span>
+              <div class="saweria-input w-full p-2 text-xs font-bold bg-[#fff8e7] flex items-center justify-between gap-2">
+                <span class="flex items-center gap-1.5 min-w-0 truncate"><i class="fa-solid fa-qrcode text-sm shrink-0"></i> QRIS (E-Wallet &amp; Bank)</span>
+                <span class="text-[10px] bg-[#faae2b] border border-black px-1.5 py-0.5 rounded uppercase shrink-0 whitespace-nowrap">QRIS Only</span>
               </div>
             </div>
           </div>
 
           <div>
             <label class="block text-xs font-bold mb-1">Catatan Tambahan (Opsional):</label>
-            <input type="text" id="inp-note" placeholder="Contoh: Es dipisah / Tolong proses sekarang" class="saweria-input w-full p-2.5 text-sm">
+            <input type="text" id="inp-note" placeholder="Cth: Es dipisah / Proses sekarang" class="saweria-input w-full p-2.5 text-xs sm:text-sm placeholder:text-[11px] sm:placeholder:text-xs">
           </div>
 
           <div class="pt-2">
@@ -333,11 +333,11 @@
       </div>
     </footer>
 
-    <!-- TOMBOL FLOATING SHORTCUT WHATSAPP CS (POJOK KANAN BAWAH) -->
-    <button type="button" onclick="contactCSWhatsApp()" title="Chat CS via WhatsApp" class="saweria-btn fixed bottom-5 right-5 z-40 bg-[#4ade80] hover:bg-[#22c55e] text-black px-4 py-2.5 rounded-full font-bold text-xs flex items-center gap-2">
-      <span class="w-2 h-2 bg-green-900 rounded-full animate-ping"></span>
-      <i class="fa-brands fa-whatsapp text-lg"></i>
-      <span>Hubungi CS</span>
+    <!-- TOMBOL FLOATING SHORTCUT WHATSAPP CS (BULAT RINGKAS DI KANAN BAWAH AGAR TIDAK MENUTUPI JUDUL/INPUT) -->
+    <button type="button" onclick="contactCSWhatsApp()" title="Hubungi CS via WhatsApp" aria-label="Hubungi CS via WhatsApp" class="saweria-btn fixed bottom-4 right-3.5 xl:right-5 z-40 bg-[#4ade80] hover:bg-[#22c55e] text-black w-11 h-11 2xl:w-auto 2xl:h-auto 2xl:px-3.5 2xl:py-2.5 rounded-full font-bold text-xs flex items-center justify-center gap-2">
+      <span class="hidden 2xl:inline-block w-2 h-2 bg-green-900 rounded-full animate-ping"></span>
+      <i class="fa-brands fa-whatsapp text-xl 2xl:text-lg"></i>
+      <span class="hidden 2xl:inline">Hubungi CS</span>
     </button>
 
   </div>
@@ -363,7 +363,7 @@
           <h1 class="font-bold text-xl">Halaman Pemisah Admin</h1>
           <p class="text-xs text-gray-600 font-bold mt-0.5">JanLupNgops.fun</p>
           <p class="text-[11px] text-gray-600 mt-2">
-            Masukkan PIN Admin untuk membuka Panel Pengaturan Toko, WiFi & Invoice.<br>(PIN Default: <b>1234</b>)
+            Masukkan PIN Admin untuk membuka Panel Pengaturan Toko, WiFi &amp; Invoice.
           </p>
         </div>
 
@@ -490,8 +490,8 @@
             <input type="text" id="adm-wa" placeholder="6281234567890" class="saweria-input w-full p-2.5 text-xs font-bold">
           </div>
           <div>
-            <label class="block text-xs font-bold mb-1">PIN Login Admin:</label>
-            <input type="text" id="adm-pin" placeholder="1234" class="saweria-input w-full p-2.5 text-xs font-bold">
+            <label class="block text-xs font-bold mb-1">Ganti PIN Login Admin:</label>
+            <input type="password" id="adm-pin" autocomplete="new-password" placeholder="Kosongkan jika tetap" class="saweria-input w-full p-2.5 text-xs font-bold">
           </div>
         </div>
 
@@ -698,7 +698,7 @@
         <button type="button" onclick="closeInvoiceModal()" class="saweria-btn bg-red-400 w-8 h-8 flex items-center justify-center font-bold shrink-0">✕</button>
       </div>
       <div class="flex gap-2 mb-3 shrink-0">
-        <input type="text" id="inp-invoice-id" placeholder="Masukkan No. Invoice, cth: INV-20261105-AB12" class="saweria-input w-full p-2.5 text-xs font-bold uppercase" onkeydown="if(event.key==='Enter') checkInvoice()">
+        <input type="text" id="inp-invoice-id" placeholder="Cth: INV-20261124-AB12" class="saweria-input w-full p-2.5 text-xs font-bold uppercase placeholder:font-normal placeholder:normal-case placeholder:text-[11px]" onkeydown="if(event.key==='Enter') checkInvoice()">
         <button type="button" onclick="checkInvoice()" class="saweria-btn bg-[#faae2b] px-4 py-2 text-xs font-bold shrink-0">Cari</button>
       </div>
       <div id="invoice-result" class="overflow-y-auto pr-1 text-xs">
@@ -736,7 +736,7 @@
       <div class="overflow-y-auto pr-1">
         <p class="text-[11px] text-gray-700 mb-2">Masukkan nomor invoice dari struk / pesan WhatsApp kamu untuk melihat progress pesananmu saat ini.</p>
         <div class="flex gap-2 mb-2">
-          <input type="text" id="inp-track-id" placeholder="Contoh: INV-20261105-AB12" class="saweria-input flex-1 p-2.5 text-sm uppercase" onkeydown="if(event.key==='Enter') trackOrder()">
+          <input type="text" id="inp-track-id" placeholder="Cth: INV-20261124-AB12" class="saweria-input flex-1 min-w-0 p-2.5 text-xs sm:text-sm uppercase placeholder:normal-case placeholder:text-[11px]" onkeydown="if(event.key==='Enter') trackOrder()">
           <button type="button" onclick="trackOrder()" class="saweria-btn bg-[#faae2b] px-4 py-2 text-xs font-bold shrink-0">Lacak</button>
         </div>
         <div id="track-recent" class="mb-3"></div>
@@ -1084,15 +1084,113 @@
       }
     }
 
+    async function sha256Hex(str) {
+      const msg = String(str || "");
+      if (window.crypto && window.crypto.subtle) {
+        const buf = await window.crypto.subtle.digest("SHA-256", new TextEncoder().encode(msg));
+        return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+      }
+      // Fallback sederhana bila dibuka via non-secure HTTP LAN
+      let h1 = 0xdeadbeef ^ msg.length, h2 = 0x41c6ce57 ^ msg.length;
+      for (let i = 0; i < msg.length; i++) {
+        const ch = msg.charCodeAt(i);
+        h1 = Math.imul(h1 ^ ch, 2654435761);
+        h2 = Math.imul(h2 ^ ch, 1597334677);
+      }
+      h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+      h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+      return (h2 >>> 0).toString(16).padStart(8, "0") + (h1 >>> 0).toString(16).padStart(8, "0");
+    }
+
+    async function sanitizeSettingsForCloud(s) {
+      const copy = { ...s };
+      if (copy.adminPin && !copy.adminPinHash) {
+        copy.adminPinHash = await sha256Hex(String(copy.adminPin));
+      }
+      delete copy.adminPin;
+      return copy;
+    }
+
+    function buildInvoicesMap(list) {
+      const out = {};
+      (list || []).forEach(inv => {
+        if (inv && inv.id) out[inv.id.toUpperCase()] = inv;
+      });
+      return out;
+    }
+
+    async function fetchInvoiceByIdFromCloud(rawId) {
+      const norm = String(rawId || "").trim().toUpperCase();
+      if (!norm || !/^[A-Z0-9\-]{4,32}$/.test(norm)) return null;
+      const baseUrl = getCloudDbUrl();
+      if (!baseUrl) return null;
+      try {
+        // 1. Cek di node per-invoice (cepat & privat tanpa unduh semua invoice)
+        const r1 = await fetch(`${baseUrl}/janlupngops/invoices_map/${encodeURIComponent(norm)}.json`, { cache: "no-store" });
+        if (r1.ok) {
+          const found = await r1.json();
+          if (found && found.id) return found;
+        }
+        // 2. Fallback untuk invoice lama yang belum ada di invoices_map
+        const r2 = await fetch(`${baseUrl}/janlupngops/invoices.json`, { cache: "no-store" });
+        if (r2.ok) {
+          const arr = normalizeCloudInvoices(await r2.json());
+          const hit = arr.find(i => i.id && i.id.toUpperCase() === norm) || null;
+          if (hit) {
+            fetch(`${baseUrl}/janlupngops/invoices_map/${encodeURIComponent(norm)}.json`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(hit)
+            }).catch(() => {});
+          }
+          return hit;
+        }
+      } catch (e) {}
+      return null;
+    }
+
+    function upsertSingleLocalInvoice(inv) {
+      if (!inv || !inv.id) return;
+      const list = loadInvoices();
+      const idx = list.findIndex(x => x && x.id && x.id.toUpperCase() === inv.id.toUpperCase());
+      if (idx >= 0) list[idx] = inv;
+      else list.unshift(inv);
+      try { localStorage.setItem(INVOICE_KEY, JSON.stringify(list)); } catch (e) {}
+    }
+
     function getCloudDbUrl() {
       return (localStorage.getItem(CLOUD_URL_KEY) || "https://janlupngops-default-rtdb.asia-southeast1.firebasedatabase.app").trim().replace(/\/+$/, "");
     }
 
-    async function pushToCloudIfEnabled(syncType = "all") {
+    async function pushToCloudIfEnabled(syncType = "all", singleInvoice = null) {
       const baseUrl = getCloudDbUrl();
       if (!baseUrl) return;
       try {
-        // Tarik data cloud terbaru dulu agar invoice dari HP customer lain TIDAK PERNAH tertimpa / hilang!
+        // Jika customer baru checkout 1 invoice, cukup simpan invoice baru tanpa mengunduh seluruh invoice pembeli lain
+        if (syncType === "single_invoice" && singleInvoice && singleInvoice.id) {
+          const normId = singleInvoice.id.toUpperCase();
+          await fetch(`${baseUrl}/janlupngops/invoices_map/${encodeURIComponent(normId)}.json`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(singleInvoice)
+          });
+          // Sinkronkan juga ke koleksi utama agar Panel Admin langsung melihatnya
+          try {
+            const getRes = await fetch(`${baseUrl}/janlupngops.json`, { cache: "no-store" });
+            const cloudData = getRes.ok ? await getRes.json() : null;
+            const cloudDeleted = Array.isArray(cloudData && cloudData.deletedInvoices) ? cloudData.deletedInvoices : [];
+            const cloudInvoices = normalizeCloudInvoices(cloudData && cloudData.invoices);
+            const mergedInvoices = mergeInvoicesList([singleInvoice], cloudInvoices, cloudDeleted);
+            await fetch(`${baseUrl}/janlupngops.json`, {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ invoices: mergedInvoices, updatedAt: Date.now() })
+            });
+          } catch (e) {}
+          return;
+        }
+
+        // Mode Admin: tarik data cloud terbaru dulu agar invoice dari HP customer lain TIDAK PERNAH tertimpa / hilang!
         let cloudData = null;
         try {
           const getRes = await fetch(`${baseUrl}/janlupngops.json`, { cache: "no-store" });
@@ -1109,23 +1207,27 @@
         localStorage.setItem(INVOICE_KEY, JSON.stringify(mergedInvoices));
 
         if (syncType === "invoices") {
-          // Hanya update node invoices & deletedInvoices (PATCH) supaya cepat & aman
           await fetch(`${baseUrl}/janlupngops.json`, {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               invoices: mergedInvoices,
+              invoices_map: buildInvoicesMap(mergedInvoices),
               deletedInvoices: mergedDeleted,
               updatedAt: Date.now()
             })
           });
         } else {
           const cleanMenus = getAdminMenusSnapshot();
+          const safeSettings = await sanitizeSettingsForCloud(storeSettings);
+          storeSettings = { ...safeSettings };
+          localStorage.setItem(SETTINGS_KEY, JSON.stringify(storeSettings));
           const payload = {
-            settings: storeSettings,
+            settings: safeSettings,
             menus: cleanMenus,
             wifi: wifiData,
             invoices: mergedInvoices,
+            invoices_map: buildInvoicesMap(mergedInvoices),
             deletedInvoices: mergedDeleted,
             updatedAt: Date.now()
           };
@@ -1141,16 +1243,67 @@
     async function pullFromCloudIfEnabled(showToast = false, onlyInvoices = false) {
       const baseUrl = getCloudDbUrl();
       if (!baseUrl) return;
+      const adminUnlocked = isAdminRoute() && sessionStorage.getItem("janlup_admin_unlocked") === "1";
+
       try {
+        // MODE PELANGGAN: Hanya unduh settings, menus, wifi + segarkan invoice milik perangkat ini saja (hemat & jaga privasi)
+        if (!adminUnlocked && !onlyInvoices) {
+          const [sRes, mRes, wRes] = await Promise.all([
+            fetch(`${baseUrl}/janlupngops/settings.json`, { cache: "no-store" }).catch(() => null),
+            fetch(`${baseUrl}/janlupngops/menus.json`, { cache: "no-store" }).catch(() => null),
+            fetch(`${baseUrl}/janlupngops/wifi.json`, { cache: "no-store" }).catch(() => null)
+          ]);
+          const sData = (sRes && sRes.ok) ? await sRes.json() : null;
+          const mData = (mRes && mRes.ok) ? await mRes.json() : null;
+          const wData = (wRes && wRes.ok) ? await wRes.json() : null;
+
+          if (sData && typeof sData === "object") {
+            const safeS = { ...DEFAULT_SETTINGS, ...sData };
+            if (safeS.adminPin && !safeS.adminPinHash) {
+              safeS.adminPinHash = await sha256Hex(String(safeS.adminPin));
+            }
+            delete safeS.adminPin;
+            storeSettings = safeS;
+            localStorage.setItem(SETTINGS_KEY, JSON.stringify(storeSettings));
+          }
+          if (Array.isArray(mData) && !mData.some(m => m && (m.live || m.id >= 900000000))) {
+            localStorage.setItem(MENUS_KEY, JSON.stringify(mData));
+            if (!(window.__mlLiveActive && window.__mlLiveActive())) menus = mData;
+          }
+          if (wData && typeof wData === "object") {
+            wifiData = { username: wData.username || DEFAULT_WIFI.username, passwords: { ...DEFAULT_WIFI.passwords, ...(wData.passwords || {}) } };
+            localStorage.setItem(WIFI_KEY, JSON.stringify(wifiData));
+          }
+
+          // Hanya simpan invoice milik perangkat ini di localStorage pelanggan (bersihkan sisa invoice orang lain bila ada)
+          const ownOnly = loadCustomerOwnInvoices();
+          for (const myInv of ownOnly.slice(0, 8)) {
+            const fresh = await fetchInvoiceByIdFromCloud(myInv.id);
+            if (fresh) Object.assign(myInv, fresh);
+          }
+          localStorage.setItem(INVOICE_KEY, JSON.stringify(ownOnly));
+          refreshAllUI();
+          return;
+        }
+
+        // MODE ADMIN: Tarik penuh settings, menus, wifi & semua invoices
         const res = await fetch(`${baseUrl}/janlupngops.json`, { cache: "no-store" });
         if (!res.ok) return;
         const data = await res.json();
         if (!data) return;
         if (!onlyInvoices) {
-          if (data.settings) { storeSettings = { ...DEFAULT_SETTINGS, ...data.settings }; localStorage.setItem(SETTINGS_KEY, JSON.stringify(storeSettings)); }
+          if (data.settings) {
+            const safeS = { ...DEFAULT_SETTINGS, ...data.settings };
+            if (safeS.adminPin && !safeS.adminPinHash) {
+              safeS.adminPinHash = await sha256Hex(String(safeS.adminPin));
+            }
+            delete safeS.adminPin;
+            storeSettings = safeS;
+            localStorage.setItem(SETTINGS_KEY, JSON.stringify(storeSettings));
+          }
           if (Array.isArray(data.menus) && !data.menus.some(m => m && (m.live || m.id >= 900000000))) {
             localStorage.setItem(MENUS_KEY, JSON.stringify(data.menus));
-            if (!menus.some(m => m && (m.live || m.id >= 900000000))) menus = data.menus;
+            if (!(window.__mlLiveActive && window.__mlLiveActive())) menus = data.menus;
           }
           if (data.wifi) { wifiData = { username: data.wifi.username || DEFAULT_WIFI.username, passwords: { ...DEFAULT_WIFI.passwords, ...(data.wifi.passwords || {}) } }; localStorage.setItem(WIFI_KEY, JSON.stringify(wifiData)); }
         }
@@ -1159,17 +1312,17 @@
         const mergedDeleted = Array.from(new Set([...loadDeletedInvoiceIds(), ...cloudDeleted]));
         saveDeletedInvoiceIds(mergedDeleted);
 
-        const cloudInvoices = normalizeCloudInvoices(data.invoices);
+        const mapInvoices = data.invoices_map && typeof data.invoices_map === "object" ? Object.values(data.invoices_map).filter(x => x && x.id) : [];
+        const cloudInvoices = mergeInvoicesList(mapInvoices, normalizeCloudInvoices(data.invoices), mergedDeleted);
         const localInvoices = loadInvoices();
         const mergedInvoices = mergeInvoicesList(localInvoices, cloudInvoices, mergedDeleted);
         localStorage.setItem(INVOICE_KEY, JSON.stringify(mergedInvoices));
 
-        // Jika di lokal ada invoice yang belum masuk ke cloud, dorong balik ke cloud
         if (mergedInvoices.length > cloudInvoices.length) {
           fetch(`${baseUrl}/janlupngops.json`, {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ invoices: mergedInvoices, deletedInvoices: mergedDeleted, updatedAt: Date.now() })
+            body: JSON.stringify({ invoices: mergedInvoices, invoices_map: buildInvoicesMap(mergedInvoices), deletedInvoices: mergedDeleted, updatedAt: Date.now() })
           }).catch(() => {});
         }
 
@@ -1187,7 +1340,11 @@
 
     function refreshAllUI() {
       storeSettings = loadSettingsFromStorage();
-      menus = loadMenusFromStorage();
+      // Jangan timpa menu LIVE outlet yang sedang dilihat pelanggan (mencegah kedip ke menu standar)
+      const keepLiveMenus = Boolean(window.__mlLiveActive && window.__mlLiveActive() && document.getElementById("admin-view").classList.contains("hidden"));
+      if (!keepLiveMenus) {
+        menus = loadMenusFromStorage();
+      }
       wifiData = loadWifiFromStorage();
 
       initDailyWifi();
@@ -1261,7 +1418,7 @@
       if (cnt) cnt.innerText = OUTLETS.length.toLocaleString("id-ID");
     }
 
-    function handleOutletInput() {
+    function handleOutletInput(openDropdown = true) {
       const input = document.getElementById("inp-outlet");
       const box = document.getElementById("outlet-detail");
       const dropdown = document.getElementById("outlet-dropdown");
@@ -1292,11 +1449,15 @@
         return;
       }
 
-      // Jika belum dipilih, sembunyikan detail & tampilkan dropdown pencarian
+      // Jika belum dipilih, sembunyikan detail
       box.classList.add("hidden");
       box.innerHTML = "";
 
       if (!dropdown) return;
+      if (!openDropdown) {
+        dropdown.classList.add("hidden");
+        return;
+      }
       const q = val.toLowerCase();
 
       // Cari berdasarkan Nama Outlet, Kota, Alamat, atau Kode Outlet
@@ -1317,7 +1478,8 @@
       }
 
       const now = new Date();
-      dropdown.innerHTML = matches.map(raw => {
+      const topBar = `<div class="sticky top-0 bg-[#fff8e7] border-b border-black px-2.5 py-1.5 flex items-center justify-between text-[10px] font-bold z-10"><span>Pilih salah satu outlet (${matches.length} ditampilkan):</span><button type="button" onclick="document.getElementById('outlet-dropdown').classList.add('hidden')" class="px-1.5 py-0.5 bg-white border border-black rounded hover:bg-red-200">✕ Tutup</button></div>`;
+      dropdown.innerHTML = topBar + matches.map(raw => {
         const o = outletObj(raw);
         const isOpen = isOutletOpenNow(o, now);
         return `
@@ -1338,8 +1500,7 @@
       const input = document.getElementById("inp-outlet");
       if (input) {
         input.value = "";
-        handleOutletInput();
-        input.focus();
+        handleOutletInput(false);
       }
     }
 
@@ -1405,7 +1566,7 @@
           btn.innerHTML = "📍 Perbarui Lokasi & Cari Outlet Terdekat (GPS)";
           userLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
           renderNearest();
-          handleOutletInput();
+          handleOutletInput(false);
         },
         function () {
           btn.disabled = false;
@@ -1545,7 +1706,9 @@
         status: "Menunggu Pembayaran"
       };
       list.unshift(inv);
-      saveInvoices(list);
+      try { localStorage.setItem(INVOICE_KEY, JSON.stringify(list)); } catch (e) {}
+      if (syncChannel) syncChannel.postMessage({ type: "invoices", timestamp: Date.now() });
+      pushToCloudIfEnabled("single_invoice", inv);
       markAsMyInvoice(inv.id); // Simpan ID invoice ini sebagai milik perangkat ini
       return inv;
     }
@@ -1649,11 +1812,17 @@
       openInvoiceChecker();
     }
 
-    function checkInvoice() {
+    async function checkInvoice() {
       const val = document.getElementById("inp-invoice-id").value;
       const box = document.getElementById("invoice-result");
-      if (!val.trim()) { alert("Masukkan nomor invoice dulu ya!"); return; }
-      const inv = findInvoiceById(val);
+      if (!val.trim()) {
+        box.innerHTML = `<div class="bg-yellow-100 border-2 border-black rounded-lg p-3 font-bold text-center">Masukkan nomor invoice dulu ya!</div>`;
+        return;
+      }
+      box.innerHTML = `<div class="bg-white border-2 border-black rounded-lg p-3 text-center text-gray-600 font-bold">⏳ Mencari invoice...</div>`;
+      const cloudInv = await fetchInvoiceByIdFromCloud(val);
+      if (cloudInv) upsertSingleLocalInvoice(cloudInv);
+      const inv = cloudInv || findInvoiceById(val);
       if (!inv) {
         currentInvoiceId = null;
         box.innerHTML = `<div class="bg-red-200 border-2 border-black rounded-lg p-3 font-bold">❌ Invoice <b>${escHtml(val.trim().toUpperCase())}</b> tidak ditemukan.</div>`;
@@ -1720,14 +1889,17 @@
       trackOrder();
     }
 
-    function trackOrder() {
+    async function trackOrder() {
       const q = document.getElementById("inp-track-id").value.trim();
       const box = document.getElementById("track-result");
       if (!q) {
         box.innerHTML = `<div class="bg-yellow-100 border-2 border-black rounded-lg p-3 text-center font-bold text-xs">Isi dulu nomor invoice-nya ya.</div>`;
         return;
       }
-      const inv = findInvoiceById(q);
+      box.innerHTML = `<div class="bg-white border-2 border-black rounded-lg p-3 text-center text-gray-600 font-bold text-xs">⏳ Memuat status terbaru...</div>`;
+      const cloudInv = await fetchInvoiceByIdFromCloud(q);
+      if (cloudInv) upsertSingleLocalInvoice(cloudInv);
+      const inv = cloudInv || findInvoiceById(q);
       if (!inv) {
         box.innerHTML = `<div class="bg-red-200 border-2 border-black rounded-lg p-3 text-center"><p class="font-bold text-sm">❌ Invoice tidak ditemukan</p></div>`;
         return;
@@ -1760,21 +1932,12 @@
       const params = new URLSearchParams(window.location.search);
       const trackId = params.get("track");
       if (!trackId) return;
-      const st = params.get("st");
-      const ono = params.get("ono");
-      await pullFromCloudIfEnabled(false);
-      const list = loadInvoices();
-      const inv = list.find(i => i.id.toUpperCase() === trackId.trim().toUpperCase());
-      if (inv) {
-        let changed = false;
-        if (st && INVOICE_STATUSES.includes(st) && inv.status !== st) { inv.status = st; changed = true; }
-        if (ono !== null && inv.orderNo !== ono) { inv.orderNo = ono; changed = true; }
-        if (changed) {
-          inv.updatedAt = Date.now();
-          saveInvoices(list);
-        }
-      }
-      openTrackModal(trackId.trim().toUpperCase());
+      // Keamanan: Jangan pernah memodifikasi status database dari query URL (?st=...&ono=...).
+      // Cukup tarik status resmi terbaru dari server/cloud lalu tampilkan modal lacak!
+      const normId = trackId.trim().toUpperCase();
+      const cloudInv = await fetchInvoiceByIdFromCloud(normId);
+      if (cloudInv) upsertSingleLocalInvoice(cloudInv);
+      openTrackModal(normId);
     }
 
     function openOrderHistory() {
@@ -2143,20 +2306,24 @@
 
       grid.innerHTML = filtered.map(m => {
         const discReg = Math.round(m.normalPrice / 2);
-        const discLarge = Math.round((m.largePrice || m.normalPrice) / 2);
+        const hasKnownLarge = Boolean(m.largePrice && m.largePrice > 0);
+        const discLarge = hasKnownLarge ? Math.round(m.largePrice / 2) : null;
         const isDrink = m.type === "drink" || m.type === "frappe";
+        const largeTagHtml = !isDrink ? '' : (m.live && !hasKnownLarge && !m.onlySize)
+          ? `<span class="text-[10px] font-semibold text-gray-500">(L: …)</span>`
+          : `<span class="text-[10px] font-semibold text-gray-700">(L: ${formatRp(discLarge || Math.round((m.normalPrice + 6000) / 2))})</span>`;
 
         return `
         <button type="button" onclick="openModal(${m.id})" class="saweria-btn ${m.bg || 'bg-[#fff8e7]'} p-3 text-left flex items-center justify-between group">
-          <div class="flex items-center gap-2.5 pr-2">
+          <div class="flex items-center gap-2.5 pr-2 min-w-0">
             ${getMenuThumbHTML(m, "w-12 h-12", "text-2xl")}
-            <div>
+            <div class="min-w-0">
               <span class="text-[9px] font-bold uppercase tracking-wider text-gray-500 block">${m.category}</span>
-              <p class="font-bold text-xs leading-snug">${m.name}</p>
+              <p class="font-bold text-xs leading-snug break-words">${m.name}</p>
               <div class="flex flex-wrap items-center gap-1.5 mt-1">
                 <span class="text-[10px] text-gray-500 line-through">${formatRp(m.normalPrice)}</span>
                 <span class="text-xs font-bold bg-[#faae2b] border border-black px-1.5 rounded">${formatRp(discReg)}</span>
-                ${isDrink ? `<span class="text-[10px] font-semibold text-gray-700">(L: ${formatRp(discLarge)})</span>` : ''}
+                ${largeTagHtml}
               </div>
             </div>
           </div>
@@ -2386,17 +2553,28 @@
     // ==========================================
     // 7. LOGIKA PANEL ADMIN (SEBASTIAN)
     // ==========================================
-    function verifyAdminPin() {
+    async function verifyAdminPin() {
       storeSettings = loadSettingsFromStorage();
       const inputPin = document.getElementById("inp-admin-pin").value.trim();
-      if (inputPin === String(storeSettings.adminPin || "1234")) {
+      if (!inputPin) {
+        alert("❌ Masukkan PIN Admin terlebih dahulu!");
+        return;
+      }
+      let ok = false;
+      if (storeSettings.adminPinHash) {
+        const inputHash = await sha256Hex(inputPin);
+        ok = (inputHash === storeSettings.adminPinHash);
+      } else {
+        ok = (inputPin === String(storeSettings.adminPin || "1234"));
+      }
+      if (ok) {
         sessionStorage.setItem("janlup_admin_unlocked", "1");
         document.getElementById("inp-admin-pin").value = "";
         adminModeActive = true;
         syncRouteView();
         window.scrollTo(0, 0);
       } else {
-        alert("❌ PIN Admin salah! (Default: 1234)");
+        alert("❌ PIN Admin salah!");
       }
     }
 
@@ -2419,7 +2597,7 @@
       document.getElementById("adm-max-disc").value = storeSettings.maxDiscount || 30000;
       document.getElementById("adm-wa").value = storeSettings.waNumber;
       document.getElementById("adm-closed-msg").value = storeSettings.closedMessage;
-      document.getElementById("adm-pin").value = storeSettings.adminPin || "1234";
+      document.getElementById("adm-pin").value = "";
       document.getElementById("adm-cloud-url").value = getCloudDbUrl();
       updateAdminStatusButtonUI();
     }
@@ -2447,7 +2625,7 @@
       updateAdminStatusButtonUI();
     }
 
-    function saveStoreSettings() {
+    async function saveStoreSettings() {
       storeSettings.minOrderItems = Math.max(1, parseInt(document.getElementById("adm-min-items").value) || 1);
       storeSettings.feeBelow25k = Math.max(0, parseInt(document.getElementById("adm-fee-below").value) || 0);
       storeSettings.feeAbove25k = Math.max(0, parseInt(document.getElementById("adm-fee-above").value) || 0);
@@ -2460,7 +2638,16 @@
       storeSettings.maxDiscount = Math.max(1000, parseInt(document.getElementById("adm-max-disc").value) || 30000);
       storeSettings.waNumber = document.getElementById("adm-wa").value.trim() || "6281234567890";
       storeSettings.closedMessage = document.getElementById("adm-closed-msg").value.trim() || DEFAULT_SETTINGS.closedMessage;
-      storeSettings.adminPin = document.getElementById("adm-pin").value.trim() || "1234";
+
+      const newPin = document.getElementById("adm-pin").value.trim();
+      if (newPin) {
+        storeSettings.adminPinHash = await sha256Hex(newPin);
+        delete storeSettings.adminPin;
+        document.getElementById("adm-pin").value = "";
+      } else if (storeSettings.adminPin && !storeSettings.adminPinHash) {
+        storeSettings.adminPinHash = await sha256Hex(String(storeSettings.adminPin));
+        delete storeSettings.adminPin;
+      }
 
       const cloudUrl = document.getElementById("adm-cloud-url").value.trim().replace(/\/+$/, "");
       localStorage.setItem(CLOUD_URL_KEY, cloudUrl);
@@ -2782,7 +2969,7 @@
       const latestNo = (inv.orderNo || "").trim();
 
       const baseCustomerUrl = window.location.origin + window.location.pathname;
-      const syncLink = `${baseCustomerUrl}?track=${encodeURIComponent(inv.id)}&st=${encodeURIComponent(inv.status)}&ono=${encodeURIComponent(latestNo)}`;
+      const syncLink = `${baseCustomerUrl}?track=${encodeURIComponent(inv.id)}`;
 
       let msg = `Halo kak ${inv.customer}, update pesananmu di *JanLupNgops.fun*:\n\n`;
       msg += `🧾 Invoice: *${inv.id}*\n`;
@@ -3116,6 +3303,7 @@
     ml.failed = null;
     onOutlet(c);
   };
+  window.__mlLiveActive = function () { return ml.mode === "live"; };
 
   var origHandle = handleOutletInput;
   handleOutletInput = function () { origHandle.apply(this, arguments); mlCheck(); };
