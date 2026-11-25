@@ -133,7 +133,7 @@
           <div class="min-w-0">
             <span class="inline-block text-[9px] font-extrabold uppercase tracking-wider bg-[#a8d8ea] border border-black px-1.5 py-0.5 rounded mb-1">Voucher Potongan</span>
             <p class="text-xs md:text-[13px] font-bold leading-snug text-gray-900">Tanpa Minimal Beli</p>
-            <p class="text-[10px] text-gray-500 font-semibold">Bebas nominal belanja</p>
+            <p class="text-[10px] text-gray-500 font-semibold">Bebas nominal setelah diskon</p>
           </div>
           <span id="vstock-nomin" class="text-xs font-extrabold border-2 border-black px-2.5 py-1.5 rounded-lg whitespace-nowrap shrink-0 bg-[#d8f3dc]">
             Sisa 5
@@ -145,7 +145,7 @@
           <div class="min-w-0">
             <span class="inline-block text-[9px] font-extrabold uppercase tracking-wider bg-[#faae2b] border border-black px-1.5 py-0.5 rounded mb-1">Voucher Potongan</span>
             <p class="text-xs md:text-[13px] font-bold leading-snug text-gray-900">Minimal Beli Rp 25.000</p>
-            <p class="text-[10px] text-gray-500 font-semibold">Min. transaksi Rp 25.000</p>
+            <p class="text-[10px] text-gray-500 font-semibold">Setelah diskon 50% ≥ Rp 25.000</p>
           </div>
           <span id="vstock-min25" class="text-xs font-extrabold border-2 border-black px-2.5 py-1.5 rounded-lg whitespace-nowrap shrink-0 bg-[#d8f3dc]">
             Sisa 5
@@ -157,7 +157,7 @@
           <div class="min-w-0">
             <span class="inline-block text-[9px] font-extrabold uppercase tracking-wider bg-[#ffb6b9] border border-black px-1.5 py-0.5 rounded mb-1">Voucher Potongan</span>
             <p class="text-xs md:text-[13px] font-bold leading-snug text-gray-900">Minimal Beli Rp 39.000</p>
-            <p class="text-[10px] text-gray-500 font-semibold">Min. transaksi Rp 39.000</p>
+            <p class="text-[10px] text-gray-500 font-semibold">Setelah diskon 50% ≥ Rp 39.000</p>
           </div>
           <span id="vstock-min39" class="text-xs font-extrabold border-2 border-black px-2.5 py-1.5 rounded-lg whitespace-nowrap shrink-0 bg-[#d8f3dc]">
             Sisa 5
@@ -2348,43 +2348,43 @@
       };
     }
 
-    function getVoucherAvailability(normalTotal = 0) {
+    function getVoucherAvailability(subtotalAfterDisc = 0) {
       const sNoMin = Math.max(0, Number(storeSettings.voucherStockNoMin ?? 5));
       const sMin25 = Math.max(0, Number(storeSettings.voucherStockMin25k ?? 5));
       const sMin39 = Math.max(0, Number(storeSettings.voucherStockMin39k ?? 5));
       const totalStock = sNoMin + sMin25 + sMin39;
       const allExhausted = totalStock <= 0;
 
-      let minRequiredNormal = 0;
+      let minRequiredSubtotal = 0;
       let requiredTierLabel = "Tanpa Minimal Beli";
       if (sNoMin > 0) {
-        minRequiredNormal = 0;
+        minRequiredSubtotal = 0;
         requiredTierLabel = "Tanpa Minimal Beli";
       } else if (sMin25 > 0) {
-        minRequiredNormal = 25000;
+        minRequiredSubtotal = 25000;
         requiredTierLabel = "Minimal Beli Rp 25.000";
       } else if (sMin39 > 0) {
-        minRequiredNormal = 39000;
+        minRequiredSubtotal = 39000;
         requiredTierLabel = "Minimal Beli Rp 39.000";
       } else {
-        minRequiredNormal = Infinity;
+        minRequiredSubtotal = Infinity;
         requiredTierLabel = "";
       }
 
       let matchedTier = null;
       if (!allExhausted) {
-        if (normalTotal >= 39000 && sMin39 > 0) matchedTier = "Minimal Beli Rp 39.000";
-        else if (normalTotal >= 25000 && sMin25 > 0) matchedTier = "Minimal Beli Rp 25.000";
+        if (subtotalAfterDisc >= 39000 && sMin39 > 0) matchedTier = "Minimal Beli Rp 39.000";
+        else if (subtotalAfterDisc >= 25000 && sMin25 > 0) matchedTier = "Minimal Beli Rp 25.000";
         else if (sNoMin > 0) matchedTier = "Tanpa Minimal Beli";
       }
 
-      const missingNormalAmount = (!allExhausted && normalTotal < minRequiredNormal)
-        ? Math.max(0, minRequiredNormal - normalTotal)
+      const missingSubtotalAmount = (!allExhausted && subtotalAfterDisc < minRequiredSubtotal)
+        ? Math.max(0, minRequiredSubtotal - subtotalAfterDisc)
         : 0;
 
       return {
         sNoMin, sMin25, sMin39, totalStock, allExhausted,
-        minRequiredNormal, requiredTierLabel, matchedTier, missingNormalAmount
+        minRequiredSubtotal, requiredTierLabel, matchedTier, missingSubtotalAmount
       };
     }
 
@@ -2698,7 +2698,7 @@
 
       document.getElementById("cart-badge").innerText = `${cart.length} Item`;
       const totals = calculateOrderTotals();
-      const vAvail = getVoucherAvailability(totals.totalNormal);
+      const vAvail = getVoucherAvailability(totals.subtotalAfterDiscount);
 
       if (!storeSettings.isOpen) {
         btnCheckout.disabled = true;
@@ -2712,10 +2712,10 @@
         btnCheckout.disabled = true;
         btnCheckout.className = "saweria-btn w-full bg-[#fde68a] text-amber-950 cursor-not-allowed font-bold py-3.5 text-xs sm:text-sm flex items-center justify-center gap-2";
         document.getElementById("btn-checkout-text").innerHTML = `⚠️ KURANG ${totals.missingItems} ITEM LAGI (MIN. ${totals.minItems} ITEM)`;
-      } else if (cart.length > 0 && vAvail.missingNormalAmount > 0) {
+      } else if (cart.length > 0 && vAvail.missingSubtotalAmount > 0) {
         btnCheckout.disabled = true;
         btnCheckout.className = "saweria-btn w-full bg-red-200 text-red-950 cursor-not-allowed font-bold py-3.5 text-xs sm:text-sm flex items-center justify-center gap-2";
-        document.getElementById("btn-checkout-text").innerHTML = `🚫 SISA VOUCHER MIN. ${formatRp(vAvail.minRequiredNormal)} (KURANG ${formatRp(vAvail.missingNormalAmount)})`;
+        document.getElementById("btn-checkout-text").innerHTML = `🚫 SISA VOUCHER MIN. ${formatRp(vAvail.minRequiredSubtotal)} (KURANG ${formatRp(vAvail.missingSubtotalAmount)})`;
       } else {
         btnCheckout.disabled = false;
         btnCheckout.className = "saweria-btn w-full bg-[#4ade80] hover:bg-[#22c55e] text-black font-bold py-3.5 text-sm md:text-base flex items-center justify-center gap-2";
@@ -2728,7 +2728,7 @@
         } else if (vAvail.allExhausted) {
           list.innerHTML = `<p class="text-center text-red-700 font-bold py-2">🚫 Stok voucher potongan 50% sedang habis. Pembelian dikunci sementara.</p>`;
         } else {
-          const minTierInfo = vAvail.minRequiredNormal > 0 ? ` • Sisa voucher wajib ${vAvail.requiredTierLabel}` : "";
+          const minTierInfo = vAvail.minRequiredSubtotal > 0 ? ` • Sisa voucher wajib ${vAvail.requiredTierLabel} setelah diskon` : "";
           list.innerHTML = `<p class="text-center text-gray-400 py-2">Belum ada menu yang dipilih. Klik menu di atas! (Minimal order ${totals.minItems} item${minTierInfo})</p>`;
         }
         summary.classList.add("hidden");
@@ -2749,8 +2749,8 @@
       }
 
       if (voucherMinAlert) {
-        if (!vAvail.allExhausted && vAvail.missingNormalAmount > 0) {
-          voucherMinAlert.innerHTML = `🎟️ Stok voucher di bawah <b>${formatRp(vAvail.minRequiredNormal)}</b> sedang <b>HABIS</b>! Sisa voucher saat ini wajib <b>${vAvail.requiredTierLabel}</b> — tambah <b>${formatRp(vAvail.missingNormalAmount)}</b> Harga Normal lagi untuk checkout.`;
+        if (!vAvail.allExhausted && vAvail.missingSubtotalAmount > 0) {
+          voucherMinAlert.innerHTML = `🎟️ Stok voucher di bawah <b>${formatRp(vAvail.minRequiredSubtotal)}</b> sedang <b>HABIS</b>! Sisa voucher saat ini wajib <b>${vAvail.requiredTierLabel}</b> (setelah potongan 50%) — kurang <b>${formatRp(vAvail.missingSubtotalAmount)}</b> lagi di Subtotal Setelah Diskon.`;
           voucherMinAlert.classList.remove("hidden");
         } else if (vAvail.allExhausted) {
           voucherMinAlert.innerHTML = `🚫 Seluruh stok voucher potongan 50% saat ini sedang <b>HABIS</b>! Pembelian otomatis dikunci sementara.`;
@@ -2768,9 +2768,9 @@
         if (vAvail.allExhausted) {
           voucherTierEl.className = "font-extrabold text-red-700 whitespace-nowrap shrink-0";
           voucherTierEl.innerText = "Stok Habis";
-        } else if (vAvail.missingNormalAmount > 0) {
+        } else if (vAvail.missingSubtotalAmount > 0) {
           voucherTierEl.className = "font-extrabold text-red-700 whitespace-nowrap shrink-0";
-          voucherTierEl.innerText = `Kurang ${formatRp(vAvail.missingNormalAmount)}`;
+          voucherTierEl.innerText = `Kurang ${formatRp(vAvail.missingSubtotalAmount)}`;
         } else {
           voucherTierEl.className = "font-extrabold text-green-800 whitespace-nowrap shrink-0";
           voucherTierEl.innerText = vAvail.matchedTier || "Tanpa Minimal Beli";
@@ -2835,15 +2835,15 @@
       clearCheckoutError();
       if (!storeSettings.isOpen) { showCheckoutError("Maaf, toko sedang tutup! " + (storeSettings.closedMessage || ""), "closed-banner"); return; }
       const totals = calculateOrderTotals();
-      const vAvail = getVoucherAvailability(totals.totalNormal);
+      const vAvail = getVoucherAvailability(totals.subtotalAfterDiscount);
       if (vAvail.allExhausted) {
         showCheckoutError("Maaf, seluruh stok voucher potongan 50% sedang habis! Pembelian belum dapat dilakukan saat ini.", "voucher-stock-section");
         return;
       }
       if (cart.length === 0) { showCheckoutError(`Pilih minimal ${totals.minItems} menu terlebih dahulu ya!`, "menu-grid"); return; }
       if (totals.missingItems > 0) { showCheckoutError(`Minimal pemesanan adalah ${totals.minItems} item! Silakan tambah ${totals.missingItems} menu lagi.`, "menu-grid"); return; }
-      if (vAvail.missingNormalAmount > 0) {
-        showCheckoutError(`Stok voucher di bawah ${formatRp(vAvail.minRequiredNormal)} sedang habis! Sisa voucher wajib ${vAvail.requiredTierLabel} (kurang ${formatRp(vAvail.missingNormalAmount)} dari Total Harga Normal).`, "menu-grid");
+      if (vAvail.missingSubtotalAmount > 0) {
+        showCheckoutError(`Stok voucher di bawah ${formatRp(vAvail.minRequiredSubtotal)} sedang habis! Sisa voucher wajib ${vAvail.requiredTierLabel} setelah potongan 50% (kurang ${formatRp(vAvail.missingSubtotalAmount)} lagi dari Subtotal Setelah Diskon).`, "menu-grid");
         return;
       }
 
