@@ -41,17 +41,6 @@
               <span class="w-2.5 h-2.5 bg-green-600 rounded-full animate-ping"></span>
               KUOTA VOUCHER 50% READY!
             </div>
-            <div class="hidden lg:flex flex-wrap gap-1.5">
-              <button type="button" onclick="openOrderHistory()" class="saweria-btn bg-white px-2.5 py-1 text-[11px] font-bold inline-flex items-center gap-1">
-                📜 Riwayat
-              </button>
-              <button type="button" onclick="openTrackModal()" class="saweria-btn bg-white px-2.5 py-1 text-[11px] font-bold inline-flex items-center gap-1">
-                📦 Lacak Pesanan
-              </button>
-              <button type="button" onclick="openInvoiceChecker()" class="saweria-btn bg-white px-2.5 py-1 text-[11px] font-bold inline-flex items-center gap-1">
-                🧾 Cek Invoice
-              </button>
-            </div>
           </div>
 
           <div class="flex flex-col lg:flex-row items-center gap-4">
@@ -123,8 +112,62 @@
 
     </div>
 
-    <div id="closed-banner" class="saweria-card bg-red-300 p-4 text-center hidden">
-      <p class="font-bold text-sm uppercase">🚫 Mohon Maaf, Order Sedang Ditutup</p>
+    <!-- INFO SISA STOK VOUCHER POTONGAN 50% (DI BAWAH WIFI & DI ATAS PILIH OUTLET) -->
+    <section id="voucher-stock-section" class="saweria-card bg-[#fff8e7] p-4 md:p-5">
+      <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b-2 border-dashed border-black/30">
+        <div class="flex items-center gap-2.5">
+          <span class="w-9 h-9 bg-[#faae2b] border-2 border-black rounded-xl flex items-center justify-center text-lg shadow-[2px_2px_0px_0px_#000] shrink-0">🎟️</span>
+          <div>
+            <h2 class="text-sm md:text-base font-bold leading-tight">Sisa Stok Voucher Potongan 50%</h2>
+            <p class="text-[11px] text-gray-600 font-semibold">Kuota voucher tersedia hari ini (update real-time)</p>
+          </div>
+        </div>
+        <span id="voucher-total-badge" class="text-[11px] font-bold bg-[#d8f3dc] border-2 border-black px-3 py-1 rounded-full shadow-[2px_2px_0px_0px_#000] whitespace-nowrap">
+          🟢 Total Ready: 15 Voucher
+        </span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-2.5 mt-3.5">
+        <!-- Voucher 1: Tanpa Minimal Beli -->
+        <div id="vcard-nomin" class="bg-white border-2 border-black rounded-xl p-3 flex items-center justify-between gap-2 shadow-[3px_3px_0px_0px_#000] transition">
+          <div class="min-w-0">
+            <span class="inline-block text-[9px] font-extrabold uppercase tracking-wider bg-[#a8d8ea] border border-black px-1.5 py-0.5 rounded mb-1">Voucher Potongan</span>
+            <p class="text-xs md:text-[13px] font-bold leading-snug text-gray-900">Tanpa Minimal Beli</p>
+            <p class="text-[10px] text-gray-500 font-semibold">Bebas nominal belanja</p>
+          </div>
+          <span id="vstock-nomin" class="text-xs font-extrabold border-2 border-black px-2.5 py-1.5 rounded-lg whitespace-nowrap shrink-0 bg-[#d8f3dc]">
+            Sisa 5
+          </span>
+        </div>
+
+        <!-- Voucher 2: Minimal Beli Rp 25.000 -->
+        <div id="vcard-min25" class="bg-white border-2 border-black rounded-xl p-3 flex items-center justify-between gap-2 shadow-[3px_3px_0px_0px_#000] transition">
+          <div class="min-w-0">
+            <span class="inline-block text-[9px] font-extrabold uppercase tracking-wider bg-[#faae2b] border border-black px-1.5 py-0.5 rounded mb-1">Voucher Potongan</span>
+            <p class="text-xs md:text-[13px] font-bold leading-snug text-gray-900">Minimal Beli Rp 25.000</p>
+            <p class="text-[10px] text-gray-500 font-semibold">Min. transaksi Rp 25.000</p>
+          </div>
+          <span id="vstock-min25" class="text-xs font-extrabold border-2 border-black px-2.5 py-1.5 rounded-lg whitespace-nowrap shrink-0 bg-[#d8f3dc]">
+            Sisa 5
+          </span>
+        </div>
+
+        <!-- Voucher 3: Minimal Beli Rp 39.000 -->
+        <div id="vcard-min39" class="bg-white border-2 border-black rounded-xl p-3 flex items-center justify-between gap-2 shadow-[3px_3px_0px_0px_#000] transition">
+          <div class="min-w-0">
+            <span class="inline-block text-[9px] font-extrabold uppercase tracking-wider bg-[#ffb6b9] border border-black px-1.5 py-0.5 rounded mb-1">Voucher Potongan</span>
+            <p class="text-xs md:text-[13px] font-bold leading-snug text-gray-900">Minimal Beli Rp 39.000</p>
+            <p class="text-[10px] text-gray-500 font-semibold">Min. transaksi Rp 39.000</p>
+          </div>
+          <span id="vstock-min39" class="text-xs font-extrabold border-2 border-black px-2.5 py-1.5 rounded-lg whitespace-nowrap shrink-0 bg-[#d8f3dc]">
+            Sisa 5
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <div id="closed-banner" class="saweria-card bg-red-300 p-4 text-center hidden transition">
+      <p id="closed-banner-title" class="font-bold text-sm uppercase">🚫 Mohon Maaf, Order Sedang Ditutup</p>
       <p id="closed-message-text" class="text-xs mt-1 font-medium text-gray-900">Kuota voucher 50% hari ini sudah habis. Silakan kembali besok ya!</p>
     </div>
 
@@ -199,28 +242,28 @@
           <div id="ml-status" class="text-[11px] font-semibold border-2 border-black rounded-lg px-3 py-2 mb-3 bg-[#fff8e7]">📌 Menu standar ditampilkan. Pilih outlet di atas — menu akan otomatis berubah jadi menu LIVE outlet itu.</div>
 
           <div class="flex items-center gap-2 mb-4">
-            <button type="button" onclick="scrollCategoryTabs(-1)" aria-label="Geser kategori ke kiri" class="saweria-btn bg-white w-7 h-8 flex items-center justify-center text-[10px] font-bold shrink-0">◀</button>
-            <div class="flex gap-2 overflow-x-auto no-scrollbar scroll-smooth py-1 px-0.5 flex-1 min-w-0 cursor-grab" id="category-tabs">
-              <button onclick="setCategory('All')" data-cat="All" class="cat-btn saweria-btn bg-[#faae2b] active px-3 py-1.5 text-xs font-bold shrink-0 whitespace-nowrap">🌟 Semua</button>
-              <button onclick="setCategory('Coffee')" data-cat="Coffee" class="cat-btn saweria-btn bg-white px-3 py-1.5 text-xs font-bold shrink-0 whitespace-nowrap">☕ Coffee</button>
-              <button onclick="setCategory('Non Coffee')" data-cat="Non Coffee" class="cat-btn saweria-btn bg-white px-3 py-1.5 text-xs font-bold shrink-0 whitespace-nowrap">🍫 Non Coffee</button>
-              <button onclick="setCategory('Kenangan Frappe')" data-cat="Kenangan Frappe" class="cat-btn saweria-btn bg-white px-3 py-1.5 text-xs font-bold shrink-0 whitespace-nowrap">🍧 Kenangan Frappe</button>
-              <button onclick="setCategory('Kenangan Toast')" data-cat="Kenangan Toast" class="cat-btn saweria-btn bg-white px-3 py-1.5 text-xs font-bold shrink-0 whitespace-nowrap">🥪 Kenangan Toast</button>
-              <button onclick="setCategory('Food')" data-cat="Food" class="cat-btn saweria-btn bg-white px-3 py-1.5 text-xs font-bold shrink-0 whitespace-nowrap">🥐 Food</button>
+            <button type="button" onclick="scrollCategoryTabs(-1)" aria-label="Geser kategori ke kiri" class="saweria-btn bg-white w-9 h-9 flex items-center justify-center text-xs font-bold shrink-0">◀</button>
+            <div class="flex gap-2.5 overflow-x-auto no-scrollbar scroll-smooth pt-1 pb-2 pl-1 pr-3 flex-1 min-w-0 cursor-grab" id="category-tabs">
+              <button onclick="setCategory('All')" data-cat="All" class="cat-btn saweria-btn bg-[#faae2b] active px-3 py-2 text-xs font-bold shrink-0 whitespace-nowrap">🌟 Semua</button>
+              <button onclick="setCategory('Coffee')" data-cat="Coffee" class="cat-btn saweria-btn bg-white px-3 py-2 text-xs font-bold shrink-0 whitespace-nowrap">☕ Coffee</button>
+              <button onclick="setCategory('Non Coffee')" data-cat="Non Coffee" class="cat-btn saweria-btn bg-white px-3 py-2 text-xs font-bold shrink-0 whitespace-nowrap">🍫 Non Coffee</button>
+              <button onclick="setCategory('Kenangan Frappe')" data-cat="Kenangan Frappe" class="cat-btn saweria-btn bg-white px-3 py-2 text-xs font-bold shrink-0 whitespace-nowrap">🍧 Kenangan Frappe</button>
+              <button onclick="setCategory('Kenangan Toast')" data-cat="Kenangan Toast" class="cat-btn saweria-btn bg-white px-3 py-2 text-xs font-bold shrink-0 whitespace-nowrap">🥪 Kenangan Toast</button>
+              <button onclick="setCategory('Food')" data-cat="Food" class="cat-btn saweria-btn bg-white px-3 py-2 text-xs font-bold shrink-0 whitespace-nowrap">🥐 Food</button>
             </div>
-            <button type="button" onclick="scrollCategoryTabs(1)" aria-label="Geser kategori ke kanan" class="saweria-btn bg-[#faae2b] w-7 h-8 flex items-center justify-center text-[10px] font-bold shrink-0">▶</button>
+            <button type="button" onclick="scrollCategoryTabs(1)" aria-label="Geser kategori ke kanan" class="saweria-btn bg-[#faae2b] w-9 h-9 flex items-center justify-center text-xs font-bold shrink-0">▶</button>
           </div>
 
-          <div id="menu-grid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 lg:max-h-[680px] lg:overflow-y-auto lg:pr-1"></div>
+          <div id="menu-grid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 pb-1"></div>
         </section>
 
       </div>
 
       <!-- KOLOM KANAN DESKTOP (STICKY SIDEBAR: STEP 3 STRUK + STEP 4 PICKUP & CHECKOUT) -->
-      <div class="lg:col-span-5 xl:col-span-4 space-y-6 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto no-scrollbar lg:pb-2">
+      <div class="lg:col-span-5 xl:col-span-4 space-y-5 lg:sticky lg:top-4">
 
         <!-- STEP 3: Keranjang / Struk Pesanan -->
-        <section id="cart-section" class="saweria-card bg-[#e8f4f8] p-5 md:p-6">
+        <section id="cart-section" class="saweria-card bg-[#e8f4f8] p-5">
           <div class="flex justify-between items-center mb-3">
             <h2 class="text-lg font-bold flex items-center gap-2">
               <span class="bg-[#faae2b] border-2 border-black w-7 h-7 rounded-full inline-flex items-center justify-center text-sm">3</span>
@@ -229,7 +272,7 @@
             <span id="cart-badge" class="text-xs font-bold bg-white border-2 border-black px-2.5 py-0.5 rounded-full">0 Item</span>
           </div>
 
-          <div id="cart-list" class="bg-white border-2 border-dashed border-black rounded-lg p-4 space-y-3 text-xs max-h-64 overflow-y-auto">
+          <div id="cart-list" class="bg-white border-2 border-dashed border-black rounded-lg p-3.5 space-y-3 text-xs max-h-60 overflow-y-auto">
             <p class="text-center text-gray-400 py-2">Belum ada menu yang dipilih. Klik menu di samping!</p>
           </div>
 
@@ -237,44 +280,50 @@
             ⚠️ Kurang <span id="alert-missing-qty">1</span> item lagi! Minimal pemesanan adalah <span id="alert-min-qty">2</span> item.
           </div>
 
+          <div id="voucher-min-alert" class="mt-3 bg-red-200 border-2 border-black rounded-lg p-2.5 text-[11px] font-bold text-red-950 hidden"></div>
+
           <div id="max-disc-alert" class="mt-3 bg-[#fff8e7] border-2 border-black rounded-lg p-2.5 text-[11px] font-bold text-amber-900 hidden">
             💡 Info: Total pesananmu telah mencapai batas maksimal potongan diskon 50% yaitu <span id="alert-max-disc-val">Rp 30.000</span> per transaksi.
           </div>
 
-          <div id="cart-summary" class="mt-4 bg-white border-2 border-black rounded-lg p-3 space-y-1.5 text-xs hidden">
-            <div class="flex justify-between text-gray-600">
+          <div id="cart-summary" class="mt-3.5 bg-white border-2 border-black rounded-lg p-3 space-y-1.5 text-xs hidden">
+            <div id="voucher-used-row" class="flex justify-between items-center gap-2 bg-[#fef9e7] border border-black rounded px-2 py-1 text-[11px]">
+              <span class="font-bold text-gray-700">🎟️ Voucher Dipakai:</span>
+              <span id="sum-voucher-tier" class="font-extrabold text-gray-900 whitespace-nowrap shrink-0">Tanpa Minimal Beli</span>
+            </div>
+            <div class="flex justify-between items-baseline gap-2 text-gray-600">
               <span>Total Harga Normal:</span>
-              <span id="sum-normal" class="line-through font-semibold">Rp 0</span>
+              <span id="sum-normal" class="line-through font-semibold whitespace-nowrap shrink-0">Rp 0</span>
             </div>
-            <div class="flex justify-between text-green-700 font-bold">
+            <div class="flex justify-between items-baseline gap-2 text-green-700 font-bold">
               <span>Diskon 50% (Maks. <span id="sum-max-label">Rp 30.000</span>):</span>
-              <span id="sum-disc">-Rp 0</span>
+              <span id="sum-disc" class="whitespace-nowrap shrink-0">-Rp 0</span>
             </div>
-            <div class="flex justify-between text-gray-700 font-semibold border-t border-dashed border-gray-300 pt-1">
+            <div class="flex justify-between items-baseline gap-2 text-gray-700 font-semibold border-t border-dashed border-gray-300 pt-1">
               <span>Subtotal Setelah Diskon:</span>
-              <span id="sum-subtotal-disc">Rp 0</span>
+              <span id="sum-subtotal-disc" class="whitespace-nowrap shrink-0">Rp 0</span>
             </div>
-            <div id="fee-row" class="flex justify-between text-gray-800 font-medium">
+            <div id="fee-row" class="flex justify-between items-baseline gap-2 text-gray-800 font-medium">
               <span id="sum-fee-label">Fee Jasa (Order ≤ Rp 25.000):</span>
-              <span id="sum-fee">+Rp 0</span>
+              <span id="sum-fee" class="whitespace-nowrap shrink-0 font-bold">+Rp 0</span>
             </div>
-            <div class="flex justify-between text-sm md:text-base font-bold border-t-2 border-black pt-2 mt-2">
+            <div class="flex justify-between items-center gap-2 text-sm md:text-base font-bold border-t-2 border-black pt-2 mt-2">
               <span>TOTAL BAYAR:</span>
-              <span id="sum-total" class="bg-[#faae2b] px-2 border border-black rounded">Rp 0</span>
+              <span id="sum-total" class="bg-[#faae2b] px-2 py-0.5 border border-black rounded whitespace-nowrap shrink-0">Rp 0</span>
             </div>
           </div>
         </section>
 
         <!-- STEP 4: Form Data & Pembayaran -->
-        <section class="saweria-card bg-white p-5 md:p-6 space-y-3.5">
-          <h2 class="text-lg font-bold flex items-center gap-2 mb-1">
+        <section class="saweria-card bg-white p-5 space-y-3">
+          <h2 class="text-lg font-bold flex items-center gap-2 mb-0.5">
             <span class="bg-[#faae2b] border-2 border-black w-7 h-7 rounded-full inline-flex items-center justify-center text-sm">4</span>
             Detail Pengambilan (Pick Up)
           </h2>
 
           <div>
             <label class="block text-xs font-bold mb-1">Nama Pemesan: <span class="text-red-500">*</span></label>
-            <input type="text" id="inp-name" placeholder="Contoh: Sean" class="saweria-input w-full p-2.5 text-sm">
+            <input type="text" id="inp-name" oninput="clearCheckoutError()" placeholder="Contoh: Sean" class="saweria-input w-full p-2.5 text-sm">
           </div>
 
           <div>
@@ -282,11 +331,11 @@
             <input type="tel" id="inp-phone" placeholder="Contoh: 081234567890" class="saweria-input w-full p-2.5 text-sm">
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-2.5">
+          <div class="grid grid-cols-1 gap-2">
             <div>
               <label class="block text-xs font-bold mb-1">Metode Order:</label>
               <div class="saweria-input w-full p-2 text-xs font-bold bg-[#fff8e7] flex items-center justify-between gap-2">
-                <span class="min-w-0 truncate">🏃 Pick Up di Kasir<span class="hidden sm:inline"> Outlet</span></span>
+                <span class="min-w-0 truncate">🏃 Pick Up di Kasir Outlet</span>
                 <span class="text-[10px] bg-[#faae2b] border border-black px-1.5 py-0.5 rounded uppercase shrink-0 whitespace-nowrap">Pick Up Only</span>
               </div>
             </div>
@@ -304,7 +353,9 @@
             <input type="text" id="inp-note" placeholder="Cth: Es dipisah / Proses sekarang" class="saweria-input w-full p-2.5 text-xs sm:text-sm placeholder:text-[11px] sm:placeholder:text-xs">
           </div>
 
-          <div class="pt-2">
+          <div id="checkout-error-box" role="alert" class="hidden bg-red-200 border-2 border-black rounded-xl p-3 text-xs font-bold text-red-950 shadow-[3px_3px_0px_0px_#000]"></div>
+
+          <div class="pt-1">
             <button id="btn-checkout-wa" onclick="sendToWhatsApp()" class="saweria-btn w-full bg-[#4ade80] hover:bg-[#22c55e] text-black font-bold py-3.5 text-sm md:text-base flex items-center justify-center gap-2">
               <i class="fa-brands fa-whatsapp text-xl"></i>
               <span id="btn-checkout-text">PESAN SEKARANG (<span id="btn-total">Rp 0</span>)</span>
@@ -321,13 +372,13 @@
       <p class="font-bold">JanLupNgops.fun — 2026</p>
       <p>Pemesanan diproses menggunakan voucher diskon resmi di aplikasi Kopi Kenangan.</p>
       <div class="flex flex-wrap justify-center gap-2">
-        <button type="button" onclick="openOrderHistory()" class="saweria-btn bg-white px-3 py-1.5 text-[11px] font-bold inline-flex items-center gap-1.5">
+        <button type="button" onclick="openOrderHistory()" class="saweria-btn bg-white px-3 py-2 text-[11px] font-bold inline-flex items-center gap-1.5 min-h-[36px]">
           📜 Riwayat Pemesanan
         </button>
-        <button type="button" onclick="openTrackModal()" class="saweria-btn bg-white px-3 py-1.5 text-[11px] font-bold inline-flex items-center gap-1.5">
+        <button type="button" onclick="openTrackModal()" class="saweria-btn bg-white px-3 py-2 text-[11px] font-bold inline-flex items-center gap-1.5 min-h-[36px]">
           📦 Lacak Pesanan
         </button>
-        <button type="button" onclick="openInvoiceChecker()" class="saweria-btn bg-white px-3 py-1.5 text-[11px] font-bold inline-flex items-center gap-1.5">
+        <button type="button" onclick="openInvoiceChecker()" class="saweria-btn bg-white px-3 py-2 text-[11px] font-bold inline-flex items-center gap-1.5 min-h-[36px]">
           🧾 Cek Invoice
         </button>
       </div>
@@ -431,6 +482,50 @@
           <button type="button" id="btn-toggle-store" onclick="toggleStoreOpen()" class="saweria-btn bg-red-400 px-4 py-2.5 text-xs font-bold shrink-0">
             🔴 Tutup Toko Sekarang
           </button>
+        </div>
+
+        <!-- PENGATURAN SISA STOK VOUCHER POTONGAN -->
+        <div class="bg-[#fef9e7] border-2 border-black rounded-xl p-4 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <h3 class="text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
+              <span>🎟️</span> Sisa Stok Voucher Potongan (Tampil di Pelanggan)
+            </h3>
+            <div class="flex flex-wrap items-center gap-1.5">
+              <button type="button" onclick="zeroAllVoucherStocks()" class="saweria-btn bg-red-300 px-2.5 py-1.5 text-[11px] font-bold">
+                🚫 Set Semua Habis (0)
+              </button>
+              <button type="button" onclick="saveVoucherStocksOnly()" class="saweria-btn bg-[#faae2b] px-3 py-1.5 text-[11px] font-bold">
+                💾 Update Stok Saja
+              </button>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div class="bg-white border-2 border-black rounded-lg p-2.5">
+              <label class="block text-[11px] font-bold mb-1.5">Tanpa Minimal Beli:</label>
+              <div class="flex items-center gap-1.5">
+                <button type="button" onclick="stepAdminVoucherStock('adm-stock-nomin', -1)" class="saweria-btn bg-gray-200 w-9 h-9 font-bold text-sm shrink-0">−</button>
+                <input type="number" id="adm-stock-nomin" min="0" placeholder="5" class="saweria-input w-full p-1.5 text-center text-sm font-bold">
+                <button type="button" onclick="stepAdminVoucherStock('adm-stock-nomin', 1)" class="saweria-btn bg-[#d8f3dc] w-9 h-9 font-bold text-sm shrink-0">+</button>
+              </div>
+            </div>
+            <div class="bg-white border-2 border-black rounded-lg p-2.5">
+              <label class="block text-[11px] font-bold mb-1.5">Min. Beli Rp 25.000:</label>
+              <div class="flex items-center gap-1.5">
+                <button type="button" onclick="stepAdminVoucherStock('adm-stock-min25', -1)" class="saweria-btn bg-gray-200 w-9 h-9 font-bold text-sm shrink-0">−</button>
+                <input type="number" id="adm-stock-min25" min="0" placeholder="5" class="saweria-input w-full p-1.5 text-center text-sm font-bold">
+                <button type="button" onclick="stepAdminVoucherStock('adm-stock-min25', 1)" class="saweria-btn bg-[#d8f3dc] w-9 h-9 font-bold text-sm shrink-0">+</button>
+              </div>
+            </div>
+            <div class="bg-white border-2 border-black rounded-lg p-2.5">
+              <label class="block text-[11px] font-bold mb-1.5">Min. Beli Rp 39.000:</label>
+              <div class="flex items-center gap-1.5">
+                <button type="button" onclick="stepAdminVoucherStock('adm-stock-min39', -1)" class="saweria-btn bg-gray-200 w-9 h-9 font-bold text-sm shrink-0">−</button>
+                <input type="number" id="adm-stock-min39" min="0" placeholder="5" class="saweria-input w-full p-1.5 text-center text-sm font-bold">
+                <button type="button" onclick="stepAdminVoucherStock('adm-stock-min39', 1)" class="saweria-btn bg-[#d8f3dc] w-9 h-9 font-bold text-sm shrink-0">+</button>
+              </div>
+            </div>
+          </div>
+          <p class="text-[10px] text-gray-600">*Isi <b>0</b> jika stok kategori tersebut habis. Jika ke-3 stok bernilai <b>0</b>, pembelian pelanggan otomatis terkunci (tidak bisa order)!</p>
         </div>
 
         <div class="bg-[#e8f4f8] border-2 border-black rounded-xl p-4 space-y-3">
@@ -854,6 +949,9 @@
       feeAbove35k: 3000,
       feeBasis: "after_discount",
       maxDiscount: 30000,
+      voucherStockNoMin: 5,
+      voucherStockMin25k: 5,
+      voucherStockMin39k: 5,
       waNumber: "6281234567890",
       closedMessage: "Kuota voucher 50% hari ini sudah habis! Buka kembali besok pagi ya.",
       adminPin: "1234"
@@ -1354,6 +1452,13 @@
 
       if (!document.getElementById("admin-view").classList.contains("hidden")) {
         updateAdminStatusButtonUI();
+        ["adm-stock-nomin", "adm-stock-min25", "adm-stock-min39"].forEach((id, idx) => {
+          const el = document.getElementById(id);
+          const keys = ["voucherStockNoMin", "voucherStockMin25k", "voucherStockMin39k"];
+          if (el && document.activeElement !== el) {
+            el.value = Math.max(0, Number(storeSettings[keys[idx]] ?? 5));
+          }
+        });
         renderAdminWifiEditor();
         renderAdminMenuList();
         renderAdminInvoiceList();
@@ -2038,18 +2143,27 @@
       const el = document.getElementById("category-tabs");
       if (!el) return;
       let isDown = false, startX = 0, startScroll = 0, moved = false;
-      el.addEventListener("pointerdown", (e) => { isDown = true; moved = false; startX = e.clientX; startScroll = el.scrollLeft; el.style.cursor = "grabbing"; });
-      el.addEventListener("pointermove", (e) => {
+      el.addEventListener("pointerdown", (e) => {
+        if (e.pointerType && e.pointerType !== "mouse") return;
+        isDown = true; moved = false; startX = e.clientX; startScroll = el.scrollLeft; el.style.cursor = "grabbing";
+      });
+      window.addEventListener("pointermove", (e) => {
         if (!isDown) return;
         const dx = e.clientX - startX;
         if (Math.abs(dx) > 6) moved = true;
         el.scrollLeft = startScroll - dx;
       });
-      const endDrag = () => { isDown = false; el.style.cursor = "grab"; };
-      el.addEventListener("pointerup", endDrag);
-      el.addEventListener("pointerleave", endDrag);
-      el.addEventListener("pointercancel", endDrag);
-      el.addEventListener("click", (e) => { if (moved) { e.stopPropagation(); e.preventDefault(); moved = false; } }, true);
+      const endDrag = () => {
+        if (!isDown) return;
+        isDown = false;
+        el.style.cursor = "grab";
+        setTimeout(() => { moved = false; }, 50);
+      };
+      window.addEventListener("pointerup", endDrag);
+      window.addEventListener("pointercancel", endDrag);
+      el.addEventListener("click", (e) => {
+        if (moved) { e.stopPropagation(); e.preventDefault(); moved = false; }
+      }, true);
     }
 
     function initDailyWifi() {
@@ -2234,11 +2348,102 @@
       };
     }
 
+    function getVoucherAvailability(normalTotal = 0) {
+      const sNoMin = Math.max(0, Number(storeSettings.voucherStockNoMin ?? 5));
+      const sMin25 = Math.max(0, Number(storeSettings.voucherStockMin25k ?? 5));
+      const sMin39 = Math.max(0, Number(storeSettings.voucherStockMin39k ?? 5));
+      const totalStock = sNoMin + sMin25 + sMin39;
+      const allExhausted = totalStock <= 0;
+
+      let minRequiredNormal = 0;
+      let requiredTierLabel = "Tanpa Minimal Beli";
+      if (sNoMin > 0) {
+        minRequiredNormal = 0;
+        requiredTierLabel = "Tanpa Minimal Beli";
+      } else if (sMin25 > 0) {
+        minRequiredNormal = 25000;
+        requiredTierLabel = "Minimal Beli Rp 25.000";
+      } else if (sMin39 > 0) {
+        minRequiredNormal = 39000;
+        requiredTierLabel = "Minimal Beli Rp 39.000";
+      } else {
+        minRequiredNormal = Infinity;
+        requiredTierLabel = "";
+      }
+
+      let matchedTier = null;
+      if (!allExhausted) {
+        if (normalTotal >= 39000 && sMin39 > 0) matchedTier = "Minimal Beli Rp 39.000";
+        else if (normalTotal >= 25000 && sMin25 > 0) matchedTier = "Minimal Beli Rp 25.000";
+        else if (sNoMin > 0) matchedTier = "Tanpa Minimal Beli";
+      }
+
+      const missingNormalAmount = (!allExhausted && normalTotal < minRequiredNormal)
+        ? Math.max(0, minRequiredNormal - normalTotal)
+        : 0;
+
+      return {
+        sNoMin, sMin25, sMin39, totalStock, allExhausted,
+        minRequiredNormal, requiredTierLabel, matchedTier, missingNormalAmount
+      };
+    }
+
+    function isOrderLocked() {
+      return !storeSettings.isOpen || getVoucherAvailability(0).allExhausted;
+    }
+
+    let lastOrderLockedState = null;
+
+    function renderVoucherStockUI() {
+      const { sNoMin, sMin25, sMin39, totalStock: total } = getVoucherAvailability(0);
+
+      const totalBadge = document.getElementById("voucher-total-badge");
+      if (totalBadge) {
+        if (!storeSettings.isOpen || total === 0) {
+          totalBadge.className = "text-[11px] font-bold bg-red-200 text-red-950 border-2 border-black px-3 py-1 rounded-full shadow-[2px_2px_0px_0px_#000] whitespace-nowrap";
+          totalBadge.innerText = !storeSettings.isOpen ? "🔴 Toko Sedang Tutup" : "❌ Kuota Voucher Habis";
+        } else if (total <= 5) {
+          totalBadge.className = "text-[11px] font-bold bg-[#faae2b] text-black border-2 border-black px-3 py-1 rounded-full shadow-[2px_2px_0px_0px_#000] whitespace-nowrap";
+          totalBadge.innerText = `🔥 Sisa Total: ${total} Voucher`;
+        } else {
+          totalBadge.className = "text-[11px] font-bold bg-[#d8f3dc] text-green-950 border-2 border-black px-3 py-1 rounded-full shadow-[2px_2px_0px_0px_#000] whitespace-nowrap";
+          totalBadge.innerText = `🟢 Total Ready: ${total} Voucher`;
+        }
+      }
+
+      const tiers = [
+        { cardId: "vcard-nomin", badgeId: "vstock-nomin", qty: storeSettings.isOpen ? sNoMin : 0 },
+        { cardId: "vcard-min25", badgeId: "vstock-min25", qty: storeSettings.isOpen ? sMin25 : 0 },
+        { cardId: "vcard-min39", badgeId: "vstock-min39", qty: storeSettings.isOpen ? sMin39 : 0 }
+      ];
+      tiers.forEach(({ cardId, badgeId, qty }) => {
+        const card = document.getElementById(cardId);
+        const pill = document.getElementById(badgeId);
+        if (!card || !pill) return;
+        if (qty <= 0) {
+          card.classList.add("opacity-65", "bg-gray-100");
+          card.classList.remove("bg-white");
+          pill.className = "text-xs font-extrabold border-2 border-black px-2.5 py-1.5 rounded-lg whitespace-nowrap shrink-0 bg-red-200 text-red-900";
+          pill.innerText = "HABIS (0)";
+        } else if (qty <= 3) {
+          card.classList.remove("opacity-65", "bg-gray-100");
+          card.classList.add("bg-white");
+          pill.className = "text-xs font-extrabold border-2 border-black px-2.5 py-1.5 rounded-lg whitespace-nowrap shrink-0 bg-[#faae2b] text-black";
+          pill.innerText = `🔥 Sisa ${qty}`;
+        } else {
+          card.classList.remove("opacity-65", "bg-gray-100");
+          card.classList.add("bg-white");
+          pill.className = "text-xs font-extrabold border-2 border-black px-2.5 py-1.5 rounded-lg whitespace-nowrap shrink-0 bg-[#d8f3dc] text-green-950";
+          pill.innerText = `🟢 Sisa ${qty}`;
+        }
+      });
+    }
+
     function applyStoreStatusUI() {
       const badge = document.getElementById("store-status-badge");
       const closedBanner = document.getElementById("closed-banner");
+      const closedTitle = document.getElementById("closed-banner-title");
       const closedMsgText = document.getElementById("closed-message-text");
-      const btnCheckout = document.getElementById("btn-checkout-wa");
 
       const maxDiscText = formatRp(storeSettings.maxDiscount || 30000);
       const minItemsVal = Math.max(1, Number(storeSettings.minOrderItems) || 1);
@@ -2258,34 +2463,68 @@
       const fAbove35 = formatRp(storeSettings.feeAbove35k ?? 3000);
       document.getElementById("header-fee-info").innerText = `≤ ${t1}: ${fBelow} | > ${t1}: ${fMid} | > ${t2}: ${fAbove35}`;
 
-      if (storeSettings.isOpen) {
-        badge.className = "inline-flex items-center gap-2 bg-green-300 border-2 border-black px-3 py-1 rounded-full text-xs font-bold mb-3 shadow-[2px_2px_0px_0px_#000]";
-        badge.innerHTML = `<span class="w-2.5 h-2.5 bg-green-600 rounded-full animate-ping"></span> KUOTA VOUCHER 50% READY!`;
-        closedBanner.classList.add("hidden");
-        renderCart();
-      } else {
-        badge.className = "inline-flex items-center gap-2 bg-red-400 border-2 border-black px-3 py-1 rounded-full text-xs font-bold mb-3 shadow-[2px_2px_0px_0px_#000]";
+      renderVoucherStockUI();
+
+      const vAvail = getVoucherAvailability(0);
+      const locked = !storeSettings.isOpen || vAvail.allExhausted;
+
+      ["inp-name", "inp-phone", "inp-note"].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.disabled = locked;
+        el.classList.toggle("bg-gray-100", locked);
+        el.classList.toggle("cursor-not-allowed", locked);
+        el.classList.toggle("opacity-70", locked);
+      });
+
+      if (!storeSettings.isOpen) {
+        badge.className = "inline-flex items-center justify-center gap-2 bg-red-400 border-2 border-black px-3 py-1 rounded-full text-xs font-bold shadow-[2px_2px_0px_0px_#000] self-center lg:self-start";
         badge.innerHTML = `<span class="w-2.5 h-2.5 bg-red-900 rounded-full"></span> TOKO SEDANG TUTUP / KUOTA HABIS`;
+        if (closedTitle) closedTitle.innerText = "🚫 Mohon Maaf, Order Sedang Ditutup";
         closedMsgText.innerText = storeSettings.closedMessage;
         closedBanner.classList.remove("hidden");
-
-        btnCheckout.disabled = true;
-        btnCheckout.className = "saweria-btn w-full bg-gray-300 text-gray-600 cursor-not-allowed font-bold py-4 text-base flex items-center justify-center gap-2";
-        document.getElementById("btn-checkout-text").innerHTML = `🚫 TOKO SEDANG TUTUP`;
+        closeModal();
+      } else if (vAvail.allExhausted) {
+        badge.className = "inline-flex items-center justify-center gap-2 bg-red-400 border-2 border-black px-3 py-1 rounded-full text-xs font-bold shadow-[2px_2px_0px_0px_#000] self-center lg:self-start";
+        badge.innerHTML = `<span class="w-2.5 h-2.5 bg-red-900 rounded-full"></span> KUOTA VOUCHER 50% HABIS!`;
+        if (closedTitle) closedTitle.innerText = "🚫 Mohon Maaf, Stok Voucher Potongan Sedang Habis";
+        closedMsgText.innerText = "Seluruh kuota voucher potongan 50% saat ini sudah habis. Pembelian otomatis dikunci sementara sampai stok voucher di-restock kembali ya!";
+        closedBanner.classList.remove("hidden");
+        closeModal();
+      } else {
+        if (vAvail.totalStock <= 5) {
+          badge.className = "inline-flex items-center justify-center gap-2 bg-[#fde68a] border-2 border-black px-3 py-1 rounded-full text-xs font-bold shadow-[2px_2px_0px_0px_#000] self-center lg:self-start";
+          badge.innerHTML = `<span class="w-2.5 h-2.5 bg-amber-600 rounded-full animate-ping"></span> SISA ${vAvail.totalStock} VOUCHER 50% HARI INI!`;
+        } else {
+          badge.className = "inline-flex items-center justify-center gap-2 bg-green-300 border-2 border-black px-3 py-1 rounded-full text-xs font-bold shadow-[2px_2px_0px_0px_#000] self-center lg:self-start";
+          badge.innerHTML = `<span class="w-2.5 h-2.5 bg-green-600 rounded-full animate-ping"></span> KUOTA VOUCHER 50% READY!`;
+        }
+        closedBanner.classList.add("hidden");
       }
+
+      if (lastOrderLockedState !== null && lastOrderLockedState !== locked) {
+        renderMenus();
+      }
+      lastOrderLockedState = locked;
+      renderCart();
     }
 
     function setCategory(cat) {
       currentCategory = cat;
+      let activeBtn = null;
       document.querySelectorAll(".cat-btn").forEach(btn => {
         if (btn.getAttribute("data-cat") === cat) {
           btn.classList.remove("bg-white");
           btn.classList.add("bg-[#faae2b]", "active");
+          activeBtn = btn;
         } else {
           btn.classList.remove("bg-[#faae2b]", "active");
           btn.classList.add("bg-white");
         }
       });
+      if (activeBtn && typeof activeBtn.scrollIntoView === "function") {
+        try { activeBtn.scrollIntoView({ behavior: "smooth", inline: "nearest", block: "nearest" }); } catch (e) {}
+      }
       renderMenus();
     }
 
@@ -2304,6 +2543,8 @@
         return;
       }
 
+      const orderLocked = isOrderLocked();
+
       grid.innerHTML = filtered.map(m => {
         const discReg = Math.round(m.normalPrice / 2);
         const hasKnownLarge = Boolean(m.largePrice && m.largePrice > 0);
@@ -2313,8 +2554,12 @@
           ? `<span class="text-[10px] font-semibold text-gray-500">(L: …)</span>`
           : `<span class="text-[10px] font-semibold text-gray-700">(L: ${formatRp(discLarge || Math.round((m.normalPrice + 6000) / 2))})</span>`;
 
+        const actionBadge = orderLocked
+          ? `<span class="w-7 h-7 bg-gray-200 border-2 border-black rounded-full flex items-center justify-center font-bold text-xs shrink-0 text-gray-600" title="Pembelian terkunci">🔒</span>`
+          : `<span class="w-7 h-7 bg-white border-2 border-black rounded-full flex items-center justify-center font-bold text-sm shrink-0 group-hover:bg-black group-hover:text-white transition">+</span>`;
+
         return `
-        <button type="button" onclick="openModal(${m.id})" class="saweria-btn ${m.bg || 'bg-[#fff8e7]'} p-3 text-left flex items-center justify-between group">
+        <button type="button" onclick="openModal(${m.id})" class="saweria-btn ${m.bg || 'bg-[#fff8e7]'} ${orderLocked ? 'opacity-75' : ''} p-3 text-left flex items-center justify-between group">
           <div class="flex items-center gap-2.5 pr-2 min-w-0">
             ${getMenuThumbHTML(m, "w-12 h-12", "text-2xl")}
             <div class="min-w-0">
@@ -2327,14 +2572,28 @@
               </div>
             </div>
           </div>
-          <span class="w-7 h-7 bg-white border-2 border-black rounded-full flex items-center justify-center font-bold text-sm shrink-0 group-hover:bg-black group-hover:text-white transition">+</span>
+          ${actionBadge}
         </button>`;
       }).join("");
     }
 
+    function flashLockedBanner() {
+      const banner = document.getElementById("closed-banner");
+      if (banner) {
+        banner.classList.remove("hidden");
+        banner.scrollIntoView({ behavior: "smooth", block: "center" });
+        banner.classList.add("ring-4", "ring-red-500");
+        setTimeout(() => banner.classList.remove("ring-4", "ring-red-500"), 1400);
+      }
+    }
+
     function openModal(id) {
       if (!storeSettings.isOpen) {
-        alert("Maaf, toko sedang tutup! " + storeSettings.closedMessage);
+        flashLockedBanner();
+        return;
+      }
+      if (getVoucherAvailability(0).allExhausted) {
+        flashLockedBanner();
         return;
       }
       activeMenu = menus.find(m => m.id === id);
@@ -2362,8 +2621,8 @@
         const largeNormal = activeMenu.largePrice || (activeMenu.normalPrice + 6000);
         const largeHalf = Math.round(largeNormal / 2);
 
-        document.getElementById("modal-reg-label").innerText = `${formatRp(regHalf)} (Normal ${formatRp(activeMenu.normalPrice)})`;
-        document.getElementById("modal-large-label").innerText = `${formatRp(largeHalf)} (Normal ${formatRp(largeNormal)})`;
+        document.getElementById("modal-reg-label").innerHTML = `<span class="text-xs font-extrabold text-red-700 block whitespace-nowrap">${formatRp(regHalf)}</span><span class="text-[10px] text-gray-500 line-through block whitespace-nowrap">${formatRp(activeMenu.normalPrice)}</span>`;
+        document.getElementById("modal-large-label").innerHTML = `<span class="text-xs font-extrabold text-red-700 block whitespace-nowrap">${formatRp(largeHalf)}</span><span class="text-[10px] text-gray-500 line-through block whitespace-nowrap">${formatRp(largeNormal)}</span>`;
 
         if (activeMenu.type === "frappe") {
           iceSelect.innerHTML = `<option value="Ice Blended (Standar)">🍧 Ice Blended (Standar Frappe)</option><option value="Less Ice Blended">🧊 Less Ice Blended</option>`;
@@ -2434,28 +2693,48 @@
       const summary = document.getElementById("cart-summary");
       const maxDiscAlert = document.getElementById("max-disc-alert");
       const minOrderAlert = document.getElementById("min-order-alert");
+      const voucherMinAlert = document.getElementById("voucher-min-alert");
       const btnCheckout = document.getElementById("btn-checkout-wa");
 
       document.getElementById("cart-badge").innerText = `${cart.length} Item`;
       const totals = calculateOrderTotals();
+      const vAvail = getVoucherAvailability(totals.totalNormal);
 
-      if (storeSettings.isOpen) {
-        if (cart.length > 0 && totals.missingItems > 0) {
-          btnCheckout.disabled = false;
-          btnCheckout.className = "saweria-btn w-full bg-[#faae2b] text-black font-bold py-4 text-sm md:text-base flex items-center justify-center gap-2";
-          document.getElementById("btn-checkout-text").innerHTML = `⚠️ KURANG ${totals.missingItems} ITEM LAGI (MIN. ${totals.minItems} ITEM)`;
-        } else {
-          btnCheckout.disabled = false;
-          btnCheckout.className = "saweria-btn w-full bg-[#4ade80] hover:bg-[#22c55e] text-black font-bold py-4 text-base flex items-center justify-center gap-2";
-          document.getElementById("btn-checkout-text").innerHTML = `PESAN SEKARANG (<span id="btn-total">${formatRp(totals.grandTotal)}</span>)`;
-        }
+      if (!storeSettings.isOpen) {
+        btnCheckout.disabled = true;
+        btnCheckout.className = "saweria-btn w-full bg-gray-300 text-gray-600 cursor-not-allowed font-bold py-3.5 text-sm md:text-base flex items-center justify-center gap-2";
+        document.getElementById("btn-checkout-text").innerHTML = `🚫 TOKO SEDANG TUTUP`;
+      } else if (vAvail.allExhausted) {
+        btnCheckout.disabled = true;
+        btnCheckout.className = "saweria-btn w-full bg-gray-300 text-gray-600 cursor-not-allowed font-bold py-3.5 text-sm md:text-base flex items-center justify-center gap-2";
+        document.getElementById("btn-checkout-text").innerHTML = `🚫 STOK VOUCHER HABIS — TIDAK BISA ORDER`;
+      } else if (cart.length > 0 && totals.missingItems > 0) {
+        btnCheckout.disabled = true;
+        btnCheckout.className = "saweria-btn w-full bg-[#fde68a] text-amber-950 cursor-not-allowed font-bold py-3.5 text-xs sm:text-sm flex items-center justify-center gap-2";
+        document.getElementById("btn-checkout-text").innerHTML = `⚠️ KURANG ${totals.missingItems} ITEM LAGI (MIN. ${totals.minItems} ITEM)`;
+      } else if (cart.length > 0 && vAvail.missingNormalAmount > 0) {
+        btnCheckout.disabled = true;
+        btnCheckout.className = "saweria-btn w-full bg-red-200 text-red-950 cursor-not-allowed font-bold py-3.5 text-xs sm:text-sm flex items-center justify-center gap-2";
+        document.getElementById("btn-checkout-text").innerHTML = `🚫 SISA VOUCHER MIN. ${formatRp(vAvail.minRequiredNormal)} (KURANG ${formatRp(vAvail.missingNormalAmount)})`;
+      } else {
+        btnCheckout.disabled = false;
+        btnCheckout.className = "saweria-btn w-full bg-[#4ade80] hover:bg-[#22c55e] text-black font-bold py-3.5 text-sm md:text-base flex items-center justify-center gap-2";
+        document.getElementById("btn-checkout-text").innerHTML = `PESAN SEKARANG (<span id="btn-total">${formatRp(totals.grandTotal)}</span>)`;
       }
 
       if (cart.length === 0) {
-        list.innerHTML = `<p class="text-center text-gray-400 py-2">Belum ada menu yang dipilih. Klik menu di atas! (Minimal order ${totals.minItems} item)</p>`;
+        if (!storeSettings.isOpen) {
+          list.innerHTML = `<p class="text-center text-red-700 font-bold py-2">🚫 Toko sedang tutup. Pemesanan belum tersedia saat ini.</p>`;
+        } else if (vAvail.allExhausted) {
+          list.innerHTML = `<p class="text-center text-red-700 font-bold py-2">🚫 Stok voucher potongan 50% sedang habis. Pembelian dikunci sementara.</p>`;
+        } else {
+          const minTierInfo = vAvail.minRequiredNormal > 0 ? ` • Sisa voucher wajib ${vAvail.requiredTierLabel}` : "";
+          list.innerHTML = `<p class="text-center text-gray-400 py-2">Belum ada menu yang dipilih. Klik menu di atas! (Minimal order ${totals.minItems} item${minTierInfo})</p>`;
+        }
         summary.classList.add("hidden");
         maxDiscAlert.classList.add("hidden");
         minOrderAlert.classList.add("hidden");
+        if (voucherMinAlert) voucherMinAlert.classList.add("hidden");
         return;
       }
 
@@ -2469,19 +2748,45 @@
         minOrderAlert.classList.add("hidden");
       }
 
+      if (voucherMinAlert) {
+        if (!vAvail.allExhausted && vAvail.missingNormalAmount > 0) {
+          voucherMinAlert.innerHTML = `🎟️ Stok voucher di bawah <b>${formatRp(vAvail.minRequiredNormal)}</b> sedang <b>HABIS</b>! Sisa voucher saat ini wajib <b>${vAvail.requiredTierLabel}</b> — tambah <b>${formatRp(vAvail.missingNormalAmount)}</b> Harga Normal lagi untuk checkout.`;
+          voucherMinAlert.classList.remove("hidden");
+        } else if (vAvail.allExhausted) {
+          voucherMinAlert.innerHTML = `🚫 Seluruh stok voucher potongan 50% saat ini sedang <b>HABIS</b>! Pembelian otomatis dikunci sementara.`;
+          voucherMinAlert.classList.remove("hidden");
+        } else {
+          voucherMinAlert.classList.add("hidden");
+        }
+      }
+
       if (totals.isCapped) maxDiscAlert.classList.remove("hidden");
       else maxDiscAlert.classList.add("hidden");
 
+      const voucherTierEl = document.getElementById("sum-voucher-tier");
+      if (voucherTierEl) {
+        if (vAvail.allExhausted) {
+          voucherTierEl.className = "font-extrabold text-red-700 whitespace-nowrap shrink-0";
+          voucherTierEl.innerText = "Stok Habis";
+        } else if (vAvail.missingNormalAmount > 0) {
+          voucherTierEl.className = "font-extrabold text-red-700 whitespace-nowrap shrink-0";
+          voucherTierEl.innerText = `Kurang ${formatRp(vAvail.missingNormalAmount)}`;
+        } else {
+          voucherTierEl.className = "font-extrabold text-green-800 whitespace-nowrap shrink-0";
+          voucherTierEl.innerText = vAvail.matchedTier || "Tanpa Minimal Beli";
+        }
+      }
+
       list.innerHTML = cart.map((item, idx) => `
         <div class="flex justify-between items-center border-b border-dashed border-gray-400 pb-2 last:border-none last:pb-0">
-          <div class="pr-2">
-            <p class="font-bold text-gray-900">${idx + 1}. ${item.name} <span class="text-[10px] font-normal text-gray-600">(${item.size})</span></p>
+          <div class="pr-2 min-w-0">
+            <p class="font-bold text-gray-900 break-words">${idx + 1}. ${item.name} <span class="text-[10px] font-normal text-gray-600">(${item.size})</span></p>
             <p class="text-[11px] text-gray-600">${item.details}</p>
             <p class="text-[10px] text-gray-400">Harga Normal: ${formatRp(item.normalPrice)}</p>
           </div>
           <div class="flex items-center gap-2 shrink-0">
-            <span class="font-bold text-gray-800">${formatRp(item.estHalfPrice)}</span>
-            <button type="button" onclick="removeCartItem(${item.cartId})" class="bg-red-200 hover:bg-red-400 border border-black w-6 h-6 rounded flex items-center justify-center font-bold text-xs">✕</button>
+            <span class="font-bold text-gray-800 whitespace-nowrap">${formatRp(item.estHalfPrice)}</span>
+            <button type="button" onclick="removeCartItem(${item.cartId})" aria-label="Hapus item" class="bg-red-200 hover:bg-red-400 border-2 border-black w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs">✕</button>
           </div>
         </div>
       `).join("");
@@ -2492,27 +2797,68 @@
       document.getElementById("sum-fee-label").innerText = `${totals.feeTierLabel}:`;
       document.getElementById("sum-fee").innerText = "+" + formatRp(totals.feePerTrans);
       document.getElementById("sum-total").innerText = formatRp(totals.grandTotal);
+      clearCheckoutError();
+    }
+
+    function showCheckoutError(msg, focusId) {
+      const box = document.getElementById("checkout-error-box");
+      if (box) {
+        box.innerText = "⚠️ " + msg;
+        box.classList.remove("hidden");
+      }
+      ["inp-name", "inp-outlet"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.remove("ring-2", "ring-red-500", "bg-red-50");
+      });
+      if (focusId) {
+        const target = document.getElementById(focusId);
+        if (target) {
+          if (target.tagName === "INPUT") target.classList.add("ring-2", "ring-red-500", "bg-red-50");
+          target.scrollIntoView({ behavior: "smooth", block: "center" });
+          if (typeof target.focus === "function" && target.tagName === "INPUT") {
+            setTimeout(() => { try { target.focus({ preventScroll: true }); } catch (e) {} }, 250);
+          }
+        }
+      }
+    }
+
+    function clearCheckoutError() {
+      const box = document.getElementById("checkout-error-box");
+      if (box) { box.classList.add("hidden"); box.innerText = ""; }
+      ["inp-name", "inp-outlet"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.remove("ring-2", "ring-red-500", "bg-red-50");
+      });
     }
 
     function sendToWhatsApp() {
-      if (!storeSettings.isOpen) { alert("Maaf, toko sedang tutup!"); return; }
+      clearCheckoutError();
+      if (!storeSettings.isOpen) { showCheckoutError("Maaf, toko sedang tutup! " + (storeSettings.closedMessage || ""), "closed-banner"); return; }
       const totals = calculateOrderTotals();
-      if (cart.length === 0) { alert(`Pilih minimal ${totals.minItems} menu dulu ya!`); return; }
-      if (totals.missingItems > 0) { alert(`Minimal pemesanan adalah ${totals.minItems} item! Silakan tambah ${totals.missingItems} menu lagi.`); return; }
+      const vAvail = getVoucherAvailability(totals.totalNormal);
+      if (vAvail.allExhausted) {
+        showCheckoutError("Maaf, seluruh stok voucher potongan 50% sedang habis! Pembelian belum dapat dilakukan saat ini.", "voucher-stock-section");
+        return;
+      }
+      if (cart.length === 0) { showCheckoutError(`Pilih minimal ${totals.minItems} menu terlebih dahulu ya!`, "menu-grid"); return; }
+      if (totals.missingItems > 0) { showCheckoutError(`Minimal pemesanan adalah ${totals.minItems} item! Silakan tambah ${totals.missingItems} menu lagi.`, "menu-grid"); return; }
+      if (vAvail.missingNormalAmount > 0) {
+        showCheckoutError(`Stok voucher di bawah ${formatRp(vAvail.minRequiredNormal)} sedang habis! Sisa voucher wajib ${vAvail.requiredTierLabel} (kurang ${formatRp(vAvail.missingNormalAmount)} dari Total Harga Normal).`, "menu-grid");
+        return;
+      }
 
       const name = document.getElementById("inp-name").value.trim();
       const outlet = document.getElementById("inp-outlet").value.trim();
       const method = "Pick Up (Ambil Sendiri di Kasir Outlet)";
       const note = document.getElementById("inp-note").value.trim();
 
-      if (!name || !outlet) { alert("Harap isi Nama Pemesan dan Nama Outlet Kopi Kenangan terlebih dahulu!"); return; }
-
+      if (!outlet) { showCheckoutError("Pilih Outlet Kopi Kenangan terlebih dahulu pada Langkah 1!", "inp-outlet"); return; }
       const outletData = findOutletByInput(outlet);
       if (!outletData) {
-        alert("Outlet belum dipilih dari daftar! Ketik nama outlet lalu pilih salah satu dari daftar yang muncul ya.");
-        document.getElementById("inp-outlet").focus();
+        showCheckoutError("Outlet belum dipilih dari daftar! Ketik nama outlet lalu klik salah satu pilihan yang muncul.", "inp-outlet");
         return;
       }
+      if (!name) { showCheckoutError("Harap isi Nama Pemesan terlebih dahulu!", "inp-name"); return; }
       selectedOutlet = outletData;
 
       const phone = document.getElementById("inp-phone").value.trim();
@@ -2527,6 +2873,7 @@
       });
 
       msg += `\n📊 *RINCIAN HARGA:*\n`;
+      msg += `• Voucher Dipakai: ${vAvail.matchedTier || "Voucher Potongan 50%"}\n`;
       msg += `• Total Harga Normal: ${formatRp(totals.totalNormal)}\n`;
       msg += `• Diskon 50% (Maks. ${formatRp(totals.maxDisc)}): -${formatRp(totals.actualDiscount)}\n`;
       msg += `• Subtotal Setelah Diskon: ${formatRp(totals.subtotalAfterDiscount)}\n`;
@@ -2595,11 +2942,53 @@
       if (elThres2) elThres2.value = storeSettings.feeThreshold2 || 35000;
       document.getElementById("adm-fee-basis").value = storeSettings.feeBasis || "after_discount";
       document.getElementById("adm-max-disc").value = storeSettings.maxDiscount || 30000;
+      const elSn = document.getElementById("adm-stock-nomin");
+      const elS25 = document.getElementById("adm-stock-min25");
+      const elS39 = document.getElementById("adm-stock-min39");
+      if (elSn) elSn.value = Math.max(0, Number(storeSettings.voucherStockNoMin ?? 5));
+      if (elS25) elS25.value = Math.max(0, Number(storeSettings.voucherStockMin25k ?? 5));
+      if (elS39) elS39.value = Math.max(0, Number(storeSettings.voucherStockMin39k ?? 5));
       document.getElementById("adm-wa").value = storeSettings.waNumber;
       document.getElementById("adm-closed-msg").value = storeSettings.closedMessage;
       document.getElementById("adm-pin").value = "";
       document.getElementById("adm-cloud-url").value = getCloudDbUrl();
       updateAdminStatusButtonUI();
+    }
+
+    function stepAdminVoucherStock(inputId, delta) {
+      const inp = document.getElementById(inputId);
+      if (!inp) return;
+      const cur = Math.max(0, parseInt(inp.value, 10) || 0);
+      inp.value = Math.max(0, cur + delta);
+    }
+
+    function readAdminVoucherStocksIntoSettings() {
+      const elSn = document.getElementById("adm-stock-nomin");
+      const elS25 = document.getElementById("adm-stock-min25");
+      const elS39 = document.getElementById("adm-stock-min39");
+      if (elSn) storeSettings.voucherStockNoMin = Math.max(0, parseInt(elSn.value, 10) || 0);
+      if (elS25) storeSettings.voucherStockMin25k = Math.max(0, parseInt(elS25.value, 10) || 0);
+      if (elS39) storeSettings.voucherStockMin39k = Math.max(0, parseInt(elS39.value, 10) || 0);
+    }
+
+    function zeroAllVoucherStocks() {
+      ["adm-stock-nomin", "adm-stock-min25", "adm-stock-min39"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = 0;
+      });
+      readAdminVoucherStocksIntoSettings();
+      saveToStorage("settings");
+      applyStoreStatusUI();
+      alert("🚫 Semua stok voucher diset HABIS (0)! Pembelian pelanggan otomatis dikunci sementara.");
+    }
+
+    function saveVoucherStocksOnly() {
+      readAdminVoucherStocksIntoSettings();
+      saveToStorage("settings");
+      applyStoreStatusUI();
+      const total = storeSettings.voucherStockNoMin + storeSettings.voucherStockMin25k + storeSettings.voucherStockMin39k;
+      const lockNote = total <= 0 ? "\n\n🚫 Karena total stok = 0, pembelian pelanggan otomatis DIKUNCI!" : "";
+      alert(`✅ Sisa stok voucher berhasil di-update!\n• Tanpa Min. Beli: ${storeSettings.voucherStockNoMin}\n• Min. Beli Rp 25.000: ${storeSettings.voucherStockMin25k}\n• Min. Beli Rp 39.000: ${storeSettings.voucherStockMin39k}${lockNote}`);
     }
 
     function updateAdminStatusButtonUI() {
@@ -2636,6 +3025,7 @@
       if (elThres2) storeSettings.feeThreshold2 = Math.max(1000, parseInt(elThres2.value) || 35000);
       storeSettings.feeBasis = document.getElementById("adm-fee-basis").value;
       storeSettings.maxDiscount = Math.max(1000, parseInt(document.getElementById("adm-max-disc").value) || 30000);
+      readAdminVoucherStocksIntoSettings();
       storeSettings.waNumber = document.getElementById("adm-wa").value.trim() || "6281234567890";
       storeSettings.closedMessage = document.getElementById("adm-closed-msg").value.trim() || DEFAULT_SETTINGS.closedMessage;
 
@@ -3008,7 +3398,31 @@
     pullFromCloudIfEnabled();
     checkUrlTrackSync();
 
-    // Auto-pull berkala saat Panel Admin sedang terbuka agar pesanan customer baru masuk otomatis
+    // Sinkronisasi ringan khusus pengaturan & stok voucher di halaman pelanggan agar stok habis langsung mengunci pembelian real-time
+    async function syncCustomerSettingsQuick() {
+      const cv = document.getElementById("customer-view");
+      if (!cv || cv.classList.contains("hidden") || document.visibilityState === "hidden") return;
+      const baseUrl = getCloudDbUrl();
+      if (!baseUrl) return;
+      try {
+        const sRes = await fetch(`${baseUrl}/janlupngops/settings.json`, { cache: "no-store" });
+        if (!sRes.ok) return;
+        const sData = await sRes.json();
+        if (sData && typeof sData === "object") {
+          const safeS = { ...DEFAULT_SETTINGS, ...sData };
+          delete safeS.adminPin;
+          const prevJson = JSON.stringify(storeSettings);
+          const nextJson = JSON.stringify(safeS);
+          if (prevJson !== nextJson) {
+            storeSettings = safeS;
+            localStorage.setItem(SETTINGS_KEY, nextJson);
+            applyStoreStatusUI();
+          }
+        }
+      } catch (e) {}
+    }
+
+    // Auto-pull berkala saat Panel Admin atau Halaman Pelanggan sedang terbuka
     setInterval(() => {
       const av = document.getElementById("admin-view");
       if (av && !av.classList.contains("hidden")) {
@@ -3016,8 +3430,14 @@
         if (activeTag !== "INPUT" && activeTag !== "SELECT" && activeTag !== "TEXTAREA") {
           pullFromCloudIfEnabled(false, true);
         }
+      } else {
+        syncCustomerSettingsQuick();
       }
     }, 15000);
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") syncCustomerSettingsQuick();
+    });
 
     // ==========================================
     // SHORTCUT HUBUNGI CS VIA WHATSAPP
@@ -3079,17 +3499,34 @@
   /* Tiap percobaan dibatasi 15 detik: kalau proxy/upstream menggantung,
      gagal dengan jelas dan biarkan logika retry/fallback yang bekerja,
      jangan biarkan banner loading stuck tanpa batas. */
-  function postKK(p) {
-    var ctrl = null, timer = null;
+  function postKK(p, extSignal) {
+    var ctrl = null, timer = null, onExtAbort = null;
     try {
       ctrl = new AbortController();
       timer = setTimeout(function () { try { ctrl.abort(); } catch (e) {} }, 15000);
+      if (extSignal) {
+        if (extSignal.aborted) { try { ctrl.abort(); } catch (e) {} }
+        else {
+          onExtAbort = function () { try { ctrl.abort(); } catch (e) {} };
+          extSignal.addEventListener("abort", onExtAbort, { once: true });
+        }
+      }
     } catch (e) { ctrl = null; }
+    var cleanup = function () {
+      if (timer) clearTimeout(timer);
+      if (extSignal && onExtAbort) { try { extSignal.removeEventListener("abort", onExtAbort); } catch (e) {} }
+    };
     var opts = { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(p) };
     if (ctrl) opts.signal = ctrl.signal;
     return fetch(API, opts)
-      .then(function (r) { if (timer) clearTimeout(timer); if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
-      .catch(function (e) { if (timer) clearTimeout(timer); throw e; });
+      .then(function (r) { cleanup(); if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+      .catch(function (e) { cleanup(); throw e; });
+  }
+  var outletAbortCtrl = null;
+  function resetOutletAbort() {
+    if (outletAbortCtrl) { try { outletAbortCtrl.abort(); } catch (e) {} }
+    try { outletAbortCtrl = new AbortController(); } catch (e) { outletAbortCtrl = null; }
+    return outletAbortCtrl ? outletAbortCtrl.signal : null;
   }
   function setStatus(html, live) {
     var s = $("ml-status"); if (!s) return;
@@ -3122,9 +3559,9 @@
   ml.adminTabs = $("category-tabs").innerHTML;
 
   function buildTabs(cats) {
-    var html = '<button onclick="setCategory(\'All\')" data-cat="All" class="cat-btn saweria-btn bg-[#faae2b] active px-3 py-1.5 text-xs font-bold shrink-0">🌟 Semua</button>';
+    var html = '<button onclick="setCategory(\'All\')" data-cat="All" class="cat-btn saweria-btn bg-[#faae2b] active px-3 py-2 text-xs font-bold shrink-0 whitespace-nowrap">🌟 Semua</button>';
     cats.forEach(function (c) {
-      html += '<button onclick="setCategory(\'' + esc(c) + '\')" data-cat="' + esc(c) + '" class="cat-btn saweria-btn bg-white px-3 py-1.5 text-xs font-bold shrink-0">' + (CAT_EMOJI[c] ? CAT_EMOJI[c] + " " : "") + esc(c) + "</button>";
+      html += '<button onclick="setCategory(\'' + esc(c) + '\')" data-cat="' + esc(c) + '" class="cat-btn saweria-btn bg-white px-3 py-2 text-xs font-bold shrink-0 whitespace-nowrap">' + (CAT_EMOJI[c] ? CAT_EMOJI[c] + " " : "") + esc(c) + "</button>";
     });
     $("category-tabs").innerHTML = html;
   }
@@ -3215,6 +3652,7 @@
 
   function applyAdmin(reasonHtml) {
     bgSeq++;
+    if (outletAbortCtrl) { try { outletAbortCtrl.abort(); } catch (e) {} outletAbortCtrl = null; }
     menus = ml.adminMenus;
     currentCategory = "All";
     ml.mode = "admin"; ml.code = null; ml.liveItems = []; ml.byId = {};
@@ -3224,12 +3662,6 @@
   }
 
   function onOutletFail(code, note) {
-    /* Gagal total: JANGAN biarkan mlCheck memanggil ulang otomatis tanpa
-       henti (itu yang dulu membuat banner loading stuck dan pesan gagal
-       hanya berkedip). Catat kegagalan untuk kode ini; percobaan
-       berikutnya hanya kalau outlet diganti atau pengguna menekan
-       "Coba lagi". Kalau ada menu live tersimpan untuk outlet ini,
-       tampilkan itu daripada menu standar. */
     ml.failed = { code: code };
     var cached = loadLiveCache(code);
     if (cached) { applyLive(code, cached.groups, null, cached); return; }
@@ -3239,17 +3671,22 @@
   function onOutlet(code) {
     if (ml.loadingCode === code) return;
     if (ml.failed && ml.failed.code === code) ml.failed = null;
+    if (typeof clearCheckoutError === "function") clearCheckoutError();
     var note = "";
     if (cart && cart.length) { cart = []; renderCart(); note = " Keranjang dikosongkan karena outlet/menu diganti."; }
     ml.loading = true; ml.loadingCode = code;
     var seq = ++ml.seq;
+    var sig = resetOutletAbort();
     setStatus("⏳ Mengambil menu live outlet…" + note, false);
     var statusP = (selectedOutlet && selectedOutlet.lat != null)
-      ? postKK({ type: "status", store_code: code, latitude: selectedOutlet.lat, longitude: selectedOutlet.lng }).catch(function () { return null; })
+      ? postKK({ type: "status", store_code: code, latitude: selectedOutlet.lat, longitude: selectedOutlet.lng }, sig).catch(function () { return null; })
       : Promise.resolve(null);
-    var menuP = postKK({ type: "menu", store_code: code }).catch(function () {
-      /* satu kali coba lagi setelah jeda — server upstream kadang sibuk sesaat */
-      return new Promise(function (r) { setTimeout(r, 2500); }).then(function () { return postKK({ type: "menu", store_code: code }); });
+    var menuP = postKK({ type: "menu", store_code: code }, sig).catch(function (err) {
+      if (sig && sig.aborted) throw err;
+      return new Promise(function (r) { setTimeout(r, 2000); }).then(function () {
+        if (sig && sig.aborted) throw new Error("aborted");
+        return postKK({ type: "menu", store_code: code }, sig);
+      });
     });
     Promise.all([menuP, statusP]).then(function (res) {
       if (seq !== ml.seq) return;
@@ -3358,17 +3795,27 @@
       });
     }
   } catch (e) {}
-  function persistPrices(key) {
+  var priceSaveKeys = {};
+  function flushPersistPrices() {
     try {
+      var keys = Object.keys(priceSaveKeys);
+      priceSaveKeys = {};
+      if (!keys.length) return;
       var all = JSON.parse(localStorage.getItem(PRICE_LS_KEY) || '{"p":{},"t":{}}');
-      all.p[key] = priceCache[key]; all.t[key] = Date.now();
+      var now = Date.now();
+      keys.forEach(function (k) {
+        if (k in priceCache) { all.p[k] = priceCache[k]; all.t[k] = now; }
+      });
       localStorage.setItem(PRICE_LS_KEY, JSON.stringify(all));
     } catch (e) {}
   }
   function queuePersistPrices(key) {
+    if (key) priceSaveKeys[key] = 1;
     if (priceSaveTimer) return;
-    priceSaveTimer = setTimeout(function () { priceSaveTimer = null; }, 800);
-    persistPrices(key);
+    priceSaveTimer = setTimeout(function () {
+      priceSaveTimer = null;
+      flushPersistPrices();
+    }, 500);
   }
 
   function largePriceFromOptions(po) {
@@ -3401,7 +3848,7 @@
     try {
       if (typeof activeMenu !== "undefined" && activeMenu) activeMenu.largePrice = lp;
       var ll = document.getElementById("modal-large-label");
-      if (ll) ll.innerText = formatRp(Math.round(lp / 2)) + " (Normal " + formatRp(lp) + ")";
+      if (ll) ll.innerHTML = '<span class="text-xs font-extrabold text-red-700 block whitespace-nowrap">' + formatRp(Math.round(lp / 2)) + '</span><span class="text-[10px] text-gray-500 line-through block whitespace-nowrap">' + formatRp(lp) + '</span>';
       if (typeof updateModalPrice === "function") updateModalPrice();
     } catch (e) {}
   }
@@ -3442,34 +3889,99 @@
   }
 
   var bgSeq = 0;
+  function setCardUnavailableLarge(it) {
+    var grid = document.getElementById("menu-grid"); if (!grid) return;
+    var btns = grid.querySelectorAll("button[onclick]");
+    for (var i = 0; i < btns.length; i++) {
+      var m = /openModal\((\d+)\)/.exec(btns[i].getAttribute("onclick") || "");
+      if (m && +m[1] === it.id) {
+        var spans = btns[i].querySelectorAll("span");
+        for (var j = 0; j < spans.length; j++) {
+          if (spans[j].textContent === "(L: …)") { spans[j].remove(); break; }
+        }
+        return;
+      }
+    }
+  }
+
   function startBgLargePrices(code, items) {
     var my = ++bgSeq;
+    var sig = outletAbortCtrl ? outletAbortCtrl.signal : null;
     var queue = items.filter(function (it) {
-      return it.liveId && !it.soldOut && (it.type === "drink" || it.type === "frappe")
+      return it.liveId && !it.soldOut && !it.onlySize && (it.type === "drink" || it.type === "frappe")
         && cachedLarge(it) === null && !((code + "|" + it.liveId) in priceCache);
-    }).sort(function (a, b) { return a.name.localeCompare(b.name, "id"); });
-    var idx = 0;
-    function worker() {
-      if (my !== bgSeq || ml.code !== code) return;
-      var it = queue[idx++];
-      if (!it) return;
-      ensureLargePrice(it).then(function () { setTimeout(worker, 120); });
+    });
+    if (!queue.length) return;
+
+    // Group unique liveIds into fast server-side batches of 24
+    var byLiveId = {};
+    var uniqueIds = [];
+    queue.forEach(function (it) {
+      if (!byLiveId[it.liveId]) { byLiveId[it.liveId] = []; uniqueIds.push(it.liveId); }
+      byLiveId[it.liveId].push(it);
+    });
+
+    var chunks = [];
+    for (var i = 0; i < uniqueIds.length; i += 24) chunks.push(uniqueIds.slice(i, i + 24));
+
+    var cIdx = 0;
+    function runNextChunk() {
+      if (my !== bgSeq || ml.code !== code || (sig && sig.aborted)) return;
+      var chunk = chunks[cIdx++];
+      if (!chunk) return;
+      postKK({ type: "options_batch", store_code: code, product_ids: chunk }, sig).then(function (res) {
+        if (my !== bgSeq || ml.code !== code) return;
+        var prices = (res && res.prices) || {};
+        chunk.forEach(function (pid) {
+          if (!(pid in prices)) return;
+          var lp = Number(prices[pid]) || 0;
+          var key = code + "|" + pid;
+          priceCache[key] = lp;
+          queuePersistPrices(key);
+          (byLiveId[pid] || []).forEach(function (it) {
+            if (lp > 0) { refreshModalIfOpen(it); patchCard(it); }
+            else setCardUnavailableLarge(it);
+          });
+        });
+        runNextChunk();
+      }).catch(function () {
+        if (my !== bgSeq || ml.code !== code || (sig && sig.aborted)) return;
+        // Fallback to individual workers if batch endpoint unavailable
+        var fIdx = 0;
+        var flat = chunk.map(function (pid) { return byLiveId[pid][0]; }).filter(Boolean);
+        function fbWorker() {
+          if (my !== bgSeq || ml.code !== code || (sig && sig.aborted)) return;
+          var it = flat[fIdx++];
+          if (!it) { runNextChunk(); return; }
+          ensureLargePrice(it).then(function () { setTimeout(fbWorker, 80); });
+        }
+        fbWorker(); fbWorker();
+      });
     }
-    for (var w = 0; w < 4; w++) worker();
+    // Fire up to 2 batch chunks concurrently so 48+ drinks finish in ~1-2s!
+    runNextChunk();
+    runNextChunk();
   }
 
   function ensureLargePrice(it) {
     var key = ml.code + "|" + it.liveId;
     if (key in priceCache) return Promise.resolve(priceCache[key]);
     if (pricePending[key]) return pricePending[key];
-    var p = postKK({ type: "options", store_code: ml.code, product_id: it.liveId }).then(function (j) {
+    var sig = outletAbortCtrl ? outletAbortCtrl.signal : null;
+    var p = postKK({ type: "options", store_code: ml.code, product_id: it.liveId }, sig).then(function (j) {
+      delete pricePending[key];
       var lp = null;
       try { lp = largePriceFromOptions(j.productOptions); } catch (e) {}
       priceCache[key] = lp || 0;
       queuePersistPrices(key);
       if (lp) { refreshModalIfOpen(it); patchCard(it); }
+      else setCardUnavailableLarge(it);
       return priceCache[key];
-    }).catch(function () { priceCache[key] = 0; return 0; });
+    }).catch(function () {
+      delete pricePending[key];
+      if (!(sig && sig.aborted)) priceCache[key] = 0;
+      return 0;
+    });
     pricePending[key] = p;
     return p;
   }
@@ -3498,9 +4010,15 @@
 
   var origOpen = openModal;
   openModal = function (id) {
+    if (typeof isOrderLocked === "function" && isOrderLocked()) {
+      origOpen.apply(this, arguments);
+      return;
+    }
     var it = ml.byId[id];
     if (it && it.soldOut) { alert("Maaf, menu ini sedang HABIS di outlet terpilih."); return; }
     origOpen.apply(this, arguments);
+    var cm = document.getElementById("custom-modal");
+    if (cm && cm.classList.contains("hidden")) return;
     applySingleSize(it);
     if (it && it.liveId && ml.code) {
       var lp = cachedLarge(it);
