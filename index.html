@@ -1564,25 +1564,31 @@
         return;
       }
       const q = val.toLowerCase();
+      const now = new Date();
+      const openOnlyEl = document.getElementById("gps-open-only");
+      const openOnly = Boolean(openOnlyEl && openOnlyEl.checked);
 
-      // Cari berdasarkan Nama Outlet, Kota, Alamat, atau Kode Outlet
+      // Cari berdasarkan Nama Outlet, Kota, Alamat, atau Kode Outlet (+ filter sedang buka jika dicentang)
       const matches = OUTLETS.filter(raw => {
-        if (!q) return true;
-        return (
+        const matchText = !q || (
           (raw[1] && raw[1].toLowerCase().includes(q)) ||
           (raw[2] && raw[2].toLowerCase().includes(q)) ||
           (raw[3] && raw[3].toLowerCase().includes(q)) ||
           (raw[0] && raw[0].toLowerCase().includes(q))
         );
+        if (!matchText) return false;
+        if (openOnly && !isOutletOpenNow(outletObj(raw), now)) return false;
+        return true;
       }).slice(0, 30);
 
       if (matches.length === 0) {
-        dropdown.innerHTML = `<div class="p-3 text-xs text-center text-gray-500 font-bold">❌ Outlet "${escHtml(val)}" tidak ditemukan. Coba ketik nama kota atau jalan lain.</div>`;
+        const emptyHint = openOnly
+          ? `❌ Tidak ada outlet "${escHtml(val)}" yang sedang buka saat ini. Hapus centang "Hanya yang sedang buka" untuk melihat semua jam.`
+          : `❌ Outlet "${escHtml(val)}" tidak ditemukan. Coba ketik nama kota atau jalan lain.`;
+        dropdown.innerHTML = `<div class="p-3 text-xs text-center text-gray-500 font-bold">${emptyHint}</div>`;
         dropdown.classList.remove("hidden");
         return;
       }
-
-      const now = new Date();
       const topBar = `<div class="sticky top-0 bg-[#fff8e7] border-b border-black px-2.5 py-1.5 flex items-center justify-between text-[10px] font-bold z-10"><span>Pilih salah satu outlet (${matches.length} ditampilkan):</span><button type="button" onclick="document.getElementById('outlet-dropdown').classList.add('hidden')" class="px-1.5 py-0.5 bg-white border border-black rounded hover:bg-red-200">✕ Tutup</button></div>`;
       dropdown.innerHTML = topBar + matches.map(raw => {
         const o = outletObj(raw);
@@ -1682,7 +1688,14 @@
       );
     }
 
-    function onGpsOpenOnlyChange() { if (userLocation) renderNearest(); }
+    function onGpsOpenOnlyChange() {
+      if (userLocation) renderNearest();
+      const dd = document.getElementById("outlet-dropdown");
+      const inp = document.getElementById("inp-outlet");
+      if ((dd && !dd.classList.contains("hidden")) || (inp && inp.value.trim() && !findOutletByInput(inp.value.trim()))) {
+        handleOutletInput(true);
+      }
+    }
 
     function renderNearest() {
       const box = document.getElementById("nearest-list");
@@ -3593,8 +3606,11 @@
         realType[+p.id] = g.name === "Kenangan Frappe" ? "frappe" : (DRINK_CATS[g.name] ? "drink" : "food");
       });
     });
+    var seenIds = {};
     groups.forEach(function (g) {
       (g.products || []).forEach(function (p) {
+        if (seenIds[+p.id]) return;
+        seenIds[+p.id] = 1;
         var type = realType[+p.id];
         if (!type) {
           /* Hanya ada di "Baru!": tebak dari namanya, sisanya minuman. */
@@ -3635,7 +3651,10 @@
     buildTabs(groups.map(function (g) { return g.name; }));
     renderMenus();
     var nm = (selectedOutlet && selectedOutlet.name) ? selectedOutlet.name : code;
-    var openTxt = status ? (status.isOpen ? " 🟢 Outlet BUKA." : " 🔴 Outlet sedang TUTUP.") : "";
+    var isOpenNow = (status && typeof status.isOpen === "boolean")
+      ? status.isOpen
+      : (selectedOutlet ? isOutletOpenNow(selectedOutlet, new Date()) : null);
+    var openTxt = isOpenNow === null ? "" : (isOpenNow ? " 🟢 Outlet BUKA." : " 🔴 Outlet sedang TUTUP.");
     /* Yang dihitung hanya produk yang TERSEDIA, supaya angka di banner
        stabil walau server kadang mengirim produk habis dan kadang
        tidak. Produk habis tetap tampil abu-abu di daftar. */
@@ -3678,14 +3697,17 @@
     var seq = ++ml.seq;
     var sig = resetOutletAbort();
     setStatus("⏳ Mengambil menu live outlet…" + note, false);
-    var statusP = (selectedOutlet && selectedOutlet.lat != null)
-      ? postKK({ type: "status", store_code: code, latitude: selectedOutlet.lat, longitude: selectedOutlet.lng }, sig).catch(function () { return null; })
-      : Promise.resolve(null);
-    var menuP = postKK({ type: "menu", store_code: code }, sig).catch(function (err) {
+    var menuPayload = { type: "menu", store_code: code };
+    if (selectedOutlet && selectedOutlet.lat != null && selectedOutlet.lng != null) {
+      menuPayload.latitude = selectedOutlet.lat;
+      menuPayload.longitude = selectedOutlet.lng;
+    }
+    var statusP = Promise.resolve(null);
+    var menuP = postKK(menuPayload, sig).catch(function (err) {
       if (sig && sig.aborted) throw err;
       return new Promise(function (r) { setTimeout(r, 2000); }).then(function () {
         if (sig && sig.aborted) throw new Error("aborted");
-        return postKK({ type: "menu", store_code: code }, sig);
+        return postKK(menuPayload, sig);
       });
     });
     Promise.all([menuP, statusP]).then(function (res) {
